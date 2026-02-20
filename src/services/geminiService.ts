@@ -11,7 +11,7 @@ export async function generateImage(
     const ai = new GoogleGenAI({ apiKey });
 
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview-image-generation',
+        model: 'gemini-2.5-flash-image',
         contents: prompt,
         config: {
             responseModalities: ['Text', 'Image'],
@@ -56,7 +56,7 @@ export async function editImage(
     const ai = new GoogleGenAI({ apiKey });
 
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview-image-generation',
+        model: 'gemini-2.5-flash-image',
         contents: [
             {
                 role: 'user',
@@ -109,9 +109,8 @@ export async function validateApiKey(apiKey: string): Promise<boolean> {
     try {
         const ai = new GoogleGenAI({ apiKey });
         await ai.models.generateContent({
-            model: 'gemini-2.5-flash-preview-image-generation',
+            model: 'gemini-2.5-pro',
             contents: 'Hi',
-            config: { responseModalities: ['Text'] },
         });
         return true;
     } catch {
