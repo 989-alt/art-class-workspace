@@ -7,7 +7,6 @@ import type { GenerationConfig, GalleryItem, PaperSize, Orientation } from './ty
 
 import Header from './components/common/Header';
 import Toast from './components/common/Toast';
-import ApiKeySetup from './components/Onboarding/ApiKeySetup';
 import GeneratorForm from './components/Form/GeneratorForm';
 import CanvasPreview from './components/Canvas/CanvasPreview';
 import SkeletonLoader from './components/Canvas/SkeletonLoader';
@@ -21,10 +20,9 @@ import './App.css';
 type ViewMode = 'generator' | 'gallery' | 'detail';
 
 export default function App() {
-  const { apiKey, hasApiKey, isLoaded, setApiKey, clearApiKey } = useApiKey();
+  const { apiKey } = useApiKey();
   const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, clearToast } = useGeneration();
   const { historyCount, maxDepth, canUndo, push, undo, clear } = useHistory();
-  const [showKeySetup, setShowKeySetup] = useState(false);
   const [gridN, setGridN] = useState(1);
   const [gridM, setGridM] = useState(1);
   const [paperSize, setPaperSize] = useState<PaperSize>('A4');
@@ -157,55 +155,10 @@ export default function App() {
     }
   }, [undo, setCurrentImage, handleImageEdited]);
 
-  const handleKeySet = useCallback(
-    (key: string) => {
-      setApiKey(key);
-      setShowKeySetup(false);
-    },
-    [setApiKey]
-  );
-
-  const handleSettingsClick = useCallback(() => {
-    setShowKeySetup(true);
-  }, []);
-
-  const handleLogout = useCallback(() => {
-    clearApiKey();
-    setShowKeySetup(false);
-  }, [clearApiKey]);
-
-  // Wait for localStorage load
-  if (!isLoaded) return null;
-
-  // Show onboarding or key setup modal
-  if (!hasApiKey || showKeySetup) {
-    return (
-      <>
-        <Toast toast={toast} onClose={clearToast} />
-        {showKeySetup && hasApiKey ? (
-          <div className="key-modal-overlay" onClick={() => setShowKeySetup(false)}>
-            <div className="key-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="key-modal__header">
-                <h2>API 키 설정</h2>
-                <button className="key-modal__close" onClick={() => setShowKeySetup(false)}>×</button>
-              </div>
-              <ApiKeySetup onKeySet={handleKeySet} />
-              <button className="key-modal__logout" onClick={handleLogout}>
-                🗑️ 키 삭제 및 로그아웃
-              </button>
-            </div>
-          </div>
-        ) : (
-          <ApiKeySetup onKeySet={handleKeySet} />
-        )}
-      </>
-    );
-  }
-
   return (
     <div className="app">
       <Toast toast={toast} onClose={clearToast} />
-      <Header apiKey={apiKey} onSettingsClick={handleSettingsClick} />
+      <Header />
 
       <main className="workspace">
         {/* Left Panel */}
