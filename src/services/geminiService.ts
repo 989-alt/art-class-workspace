@@ -1,18 +1,29 @@
 import { GoogleGenAI } from '@google/genai';
 
+interface GenerateImageOptions {
+    aspectRatio?: string;
+}
+
 /**
  * Generate a line art image using Gemini's image generation.
  * Returns the base64-encoded image data.
  */
 export async function generateImage(
     apiKey: string,
-    prompt: string
+    prompt: string,
+    options?: GenerateImageOptions
 ): Promise<string> {
     const ai = new GoogleGenAI({ apiKey });
 
+    // Build the enhanced prompt with strong aspect ratio instructions
+    let enhancedPrompt = prompt;
+    if (options?.aspectRatio) {
+        enhancedPrompt = `${prompt}\n\nCRITICAL REQUIREMENT: Generate the image with EXACTLY ${options.aspectRatio} aspect ratio. The design MUST completely fill the entire canvas from edge to edge with no empty margins or white space borders. Extend the artwork to touch all four edges of the image.`;
+    }
+
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
-        contents: prompt,
+        contents: enhancedPrompt,
         config: {
             responseModalities: ['Text', 'Image'],
         },
@@ -68,7 +79,7 @@ export async function editImage(
                         },
                     },
                     {
-                        text: `${editPrompt}\n\nIMPORTANT: The result must remain a black and white line art coloring page with pure black outlines on white background. No shading, no gradients, no colors.`,
+                        text: `${editPrompt}\n\nIMPORTANT: The result must remain a black and white line art coloring page with pure black outlines on white background. No shading, no gradients, no colors. Maintain the exact same aspect ratio and ensure the design fills the entire canvas.`,
                     },
                 ],
             },

@@ -1,17 +1,17 @@
 import { jsPDF } from 'jspdf';
-
-// A4 dimensions in mm
-const A4_WIDTH = 210;
-const A4_HEIGHT = 297;
+import type { PaperSize, Orientation } from '../types';
+import { PAPER_DIMENSIONS } from '../types';
 
 /**
  * Export the generated image as a multi-page PDF,
- * split into N x M grid pieces, each on a separate A4 page at (0,0) with no margins.
+ * split into N x M grid pieces, each on a separate page at (0,0) with no margins.
  */
 export async function exportToPdf(
     base64Image: string,
     gridN: number,
     gridM: number,
+    paperSize: PaperSize = 'A4',
+    orientation: Orientation = 'vertical',
     filename: string = 'art-class-도안.pdf'
 ): Promise<void> {
     // Load image into canvas
@@ -26,10 +26,19 @@ export async function exportToPdf(
     const pieceW = Math.floor(img.width / gridN);
     const pieceH = Math.floor(img.height / gridM);
 
+    // Get paper dimensions
+    const baseDimensions = PAPER_DIMENSIONS[paperSize];
+    const pageW = orientation === 'vertical' ? baseDimensions.width : baseDimensions.height;
+    const pageH = orientation === 'vertical' ? baseDimensions.height : baseDimensions.width;
+
+    // jsPDF format string (lowercase)
+    const format = paperSize.toLowerCase();
+    const jsPdfOrientation = orientation === 'vertical' ? 'portrait' : 'landscape';
+
     const doc = new jsPDF({
-        orientation: pieceW > pieceH ? 'landscape' : 'portrait',
+        orientation: jsPdfOrientation,
         unit: 'mm',
-        format: 'a4',
+        format: format,
     });
 
     let isFirstPage = true;
@@ -37,7 +46,7 @@ export async function exportToPdf(
     for (let row = 0; row < gridM; row++) {
         for (let col = 0; col < gridN; col++) {
             if (!isFirstPage) {
-                doc.addPage('a4', pieceW > pieceH ? 'landscape' : 'portrait');
+                doc.addPage(format, jsPdfOrientation);
             }
             isFirstPage = false;
 
@@ -59,10 +68,6 @@ export async function exportToPdf(
             );
 
             const pieceDataUrl = pieceCanvas.toDataURL('image/png');
-
-            // Determine orientation-aware dimensions
-            const pageW = pieceW > pieceH ? A4_HEIGHT : A4_WIDTH;
-            const pageH = pieceW > pieceH ? A4_WIDTH : A4_HEIGHT;
 
             // Add image at (0, 0) filling entire page — no margins
             doc.addImage(pieceDataUrl, 'PNG', 0, 0, pageW, pageH);

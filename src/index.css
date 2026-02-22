@@ -1,20 +1,58 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Pretendard:wght@400;500;600;700&display=swap');
 
 /* ── CSS Variables / Design Tokens ── */
 :root {
-  --primary: #667eea;
-  --primary-dark: #5a67d8;
-  --text-primary: #1a1a2e;
-  --text-secondary: #6b7280;
-  --bg-body: #f8f9ff;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
-  --font-sans: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  /* Color Palette - Warm Atelier */
+  --cream: #FAF8F5;
+  --cream-dark: #F5F1EB;
+  --warm-white: #FFFEFB;
+  --charcoal: #2D2926;
+  --charcoal-light: #4A4543;
+  --stone: #8B8582;
+  --stone-light: #B5B0AC;
+  --copper: #C17F59;
+  --copper-dark: #A66B47;
+  --copper-glow: rgba(193, 127, 89, 0.15);
+  --sage: #7A8B7A;
+  --sage-light: rgba(122, 139, 122, 0.12);
+  --ink: #1A1918;
+  --paper: #FDFCFA;
+
+  /* Semantic Colors */
+  --primary: var(--copper);
+  --primary-dark: var(--copper-dark);
+  --text-primary: var(--charcoal);
+  --text-secondary: var(--stone);
+  --text-muted: var(--stone-light);
+  --bg-body: var(--cream);
+  --bg-card: var(--warm-white);
+  --bg-elevated: var(--paper);
+
+  /* Borders & Shadows */
+  --border-subtle: rgba(45, 41, 38, 0.06);
+  --border-light: rgba(45, 41, 38, 0.1);
+  --border-medium: rgba(45, 41, 38, 0.15);
+  --shadow-sm: 0 1px 3px rgba(45, 41, 38, 0.04), 0 1px 2px rgba(45, 41, 38, 0.06);
+  --shadow-md: 0 4px 12px rgba(45, 41, 38, 0.06), 0 2px 4px rgba(45, 41, 38, 0.04);
+  --shadow-lg: 0 12px 40px rgba(45, 41, 38, 0.08), 0 4px 12px rgba(45, 41, 38, 0.04);
+  --shadow-xl: 0 24px 60px rgba(45, 41, 38, 0.1), 0 8px 20px rgba(45, 41, 38, 0.06);
+  --shadow-glow: 0 0 0 3px var(--copper-glow);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.25s ease;
+  --transition-slow: 0.4s ease;
 }
 
 /* ── Reset ── */
@@ -30,49 +68,68 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   color: var(--text-primary);
   background: var(--bg-body);
-  line-height: 1.5;
+  line-height: 1.6;
   min-width: 1024px;
+  position: relative;
+}
+
+/* Paper texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--cream-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
+  background: var(--stone-light);
+  border-radius: 5px;
+  border: 2px solid var(--cream-dark);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--stone);
 }
 
 /* ── Selection ── */
 ::selection {
-  background: rgba(102, 126, 234, 0.2);
-  color: inherit;
+  background: var(--copper-glow);
+  color: var(--charcoal);
 }
 
 /* ── Spinner (reusable) ── */
 .spinner {
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.25);
   border-top-color: white;
   border-radius: 50%;
-  animation: spin 0.6s linear infinite;
+  animation: spin 0.7s linear infinite;
   display: inline-block;
+}
+
+.spinner--dark {
+  border-color: var(--border-light);
+  border-top-color: var(--copper);
 }
 
 @keyframes spin {
@@ -83,7 +140,7 @@ body {
 
 /* ── Focus styles ── */
 :focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--copper);
   outline-offset: 2px;
 }
 
@@ -93,10 +150,83 @@ button:focus:not(:focus-visible) {
 
 /* ── Anchors ── */
 a {
-  color: var(--primary);
+  color: var(--copper);
   text-decoration: none;
+  transition: color var(--transition-fast);
 }
 
 a:hover {
+  color: var(--copper-dark);
   text-decoration: underline;
+}
+
+/* ── Typography Utilities ── */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* ── Button Base ── */
+button {
+  font-family: var(--font-body);
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pencilSketch {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+  }
 }

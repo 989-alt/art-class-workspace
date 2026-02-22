@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import type { GenerationConfig, Mode, Difficulty, MandalaPreset } from '../../types';
+import type { GenerationConfig, Mode, Difficulty, MandalaPreset, Orientation, PaperSize } from '../../types';
 import ModeSelector from './ModeSelector';
 import DifficultySlider from './DifficultySlider';
+import OrientationSelector from './OrientationSelector';
+import PaperSizeSelector from './PaperSizeSelector';
 import GridSelector from './GridSelector';
 import MandalaPresets from './MandalaPresets';
+import GenerationCountSelector from './GenerationCountSelector';
 import './GeneratorForm.css';
 
 interface GeneratorFormProps {
     isLoading: boolean;
-    onGenerate: (config: GenerationConfig) => void;
+    onGenerate: (config: GenerationConfig, count: number) => void;
 }
 
 export default function GeneratorForm({ isLoading, onGenerate }: GeneratorFormProps) {
@@ -16,13 +19,16 @@ export default function GeneratorForm({ isLoading, onGenerate }: GeneratorFormPr
     const [topic, setTopic] = useState('');
     const [mandalaPreset, setMandalaPreset] = useState<MandalaPreset>('flower');
     const [difficulty, setDifficulty] = useState<Difficulty>('medium');
-    const [gridN, setGridN] = useState(2);
-    const [gridM, setGridM] = useState(2);
+    const [orientation, setOrientation] = useState<Orientation>('vertical');
+    const [paperSize, setPaperSize] = useState<PaperSize>('A4');
+    const [gridN, setGridN] = useState(1);
+    const [gridM, setGridM] = useState(1);
+    const [generationCount, setGenerationCount] = useState(1);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (mode === 'free' && !topic.trim()) return;
-        onGenerate({ mode, topic, mandalaPreset, difficulty, gridN, gridM });
+        onGenerate({ mode, topic, mandalaPreset, difficulty, orientation, paperSize, gridN, gridM }, generationCount);
     };
 
     const canSubmit = mode === 'mandala' || topic.trim().length > 0;
@@ -60,11 +66,31 @@ export default function GeneratorForm({ isLoading, onGenerate }: GeneratorFormPr
                 disabled={isLoading}
             />
 
+            <OrientationSelector
+                orientation={orientation}
+                onOrientationChange={setOrientation}
+                disabled={isLoading}
+            />
+
+            <PaperSizeSelector
+                paperSize={paperSize}
+                onPaperSizeChange={setPaperSize}
+                disabled={isLoading}
+            />
+
             <GridSelector
                 gridN={gridN}
                 gridM={gridM}
+                orientation={orientation}
+                paperSize={paperSize}
                 onGridNChange={setGridN}
                 onGridMChange={setGridM}
+                disabled={isLoading}
+            />
+
+            <GenerationCountSelector
+                count={generationCount}
+                onCountChange={setGenerationCount}
                 disabled={isLoading}
             />
 

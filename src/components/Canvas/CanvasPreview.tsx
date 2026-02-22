@@ -1,18 +1,33 @@
+import type { PaperSize, Orientation } from '../../types';
+import { PAPER_DIMENSIONS } from '../../types';
 import './CanvasPreview.css';
 
 interface CanvasPreviewProps {
     image: string | null;
     gridN: number;
     gridM: number;
+    paperSize: PaperSize;
+    orientation: Orientation;
     isLoading: boolean;
 }
 
-export default function CanvasPreview({ image, gridN, gridM, isLoading }: CanvasPreviewProps) {
+export default function CanvasPreview({ image, gridN, gridM, paperSize, orientation, isLoading }: CanvasPreviewProps) {
     if (isLoading || !image) return null;
+
+    // Calculate aspect ratio based on paper size and orientation
+    const baseDimensions = PAPER_DIMENSIONS[paperSize];
+    const pieceW = orientation === 'vertical' ? baseDimensions.width : baseDimensions.height;
+    const pieceH = orientation === 'vertical' ? baseDimensions.height : baseDimensions.width;
+    const totalW = gridN * pieceW;
+    const totalH = gridM * pieceH;
+    const aspectRatio = `${totalW} / ${totalH}`;
 
     return (
         <div className="canvas-preview">
-            <div className="canvas-preview__container">
+            <div
+                className="canvas-preview__container"
+                style={{ aspectRatio }}
+            >
                 <img
                     className="canvas-preview__image"
                     src={`data:image/png;base64,${image}`}
@@ -39,6 +54,9 @@ export default function CanvasPreview({ image, gridN, gridM, isLoading }: Canvas
                         ))}
                     </div>
                 )}
+            </div>
+            <div className="canvas-preview__info">
+                {paperSize} {orientation === 'vertical' ? '세로' : '가로'} • {gridN}×{gridM} 그리드
             </div>
         </div>
     );

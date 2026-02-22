@@ -8,7 +8,7 @@
     overflow: hidden;
     background: rgba(255, 255, 255, 0.7);
     border: 1px solid rgba(0, 0, 0, 0.06);
-    aspect-ratio: 1 / 1;
+    min-height: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -80,4 +80,14 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.skeleton__progress {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-radius: 20px;
 }

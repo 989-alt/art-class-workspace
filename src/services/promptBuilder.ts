@@ -1,6 +1,11 @@
-import type { Mode, Difficulty, MandalaPreset } from '../types';
+import type { Mode, Difficulty, MandalaPreset, Orientation, PaperSize } from '../types';
 import { MANDALA_PRESET_LABELS } from '../types';
 import { calculateAspectRatio } from '../utils/aspectRatio';
+
+const ORIENTATION_DESC: Record<Orientation, string> = {
+    vertical: 'portrait orientation (taller than wide)',
+    horizontal: 'landscape orientation (wider than tall)',
+};
 
 const DIFFICULTY_MAP: Record<Difficulty, string> = {
     easy: 'simple design with few large shapes and thick outlines, minimal detail, suitable for young children',
@@ -13,11 +18,14 @@ export function buildPrompt(
     topic: string,
     mandalaPreset: MandalaPreset,
     difficulty: Difficulty,
+    orientation: Orientation,
+    paperSize: PaperSize,
     gridN: number,
     gridM: number
 ): string {
-    const aspectRatio = calculateAspectRatio(gridN, gridM);
+    const aspectRatio = calculateAspectRatio(gridN, gridM, orientation, paperSize);
     const difficultyDesc = DIFFICULTY_MAP[difficulty];
+    const orientationDesc = ORIENTATION_DESC[orientation];
 
     if (mode === 'mandala') {
         const theme = MANDALA_PRESET_LABELS[mandalaPreset];
@@ -25,8 +33,10 @@ export function buildPrompt(
             `Create a black and white mandala coloring page with a "${theme}" theme.`,
             `Style: ${difficultyDesc}.`,
             `The mandala should be a symmetric, circular pattern centered in the image.`,
-            `Aspect ratio: ${aspectRatio}.`,
+            `Layout: ${orientationDesc}. Aspect ratio MUST be exactly ${aspectRatio}.`,
             `Requirements: pure black outlines on a pure white background, no shading, no gradients, no color fills, no gray areas.`,
+            `IMPORTANT: Do NOT include any text, letters, words, numbers, or written characters anywhere in the design.`,
+            `CRITICAL: The design MUST fill the ENTIRE canvas from edge to edge with NO empty margins or borders. Extend patterns and decorative elements all the way to the edges of the image.`,
             `The design must be suitable for printing and coloring with colored pencils or markers.`,
             `Clean, crisp vector-like line art quality.`,
         ].join('\n');
@@ -35,10 +45,12 @@ export function buildPrompt(
     return [
         `Create a black and white line art coloring page of "${topic}".`,
         `Style: ${difficultyDesc}.`,
-        `Aspect ratio: ${aspectRatio}.`,
+        `Layout: ${orientationDesc}. Aspect ratio MUST be exactly ${aspectRatio}.`,
         `Requirements: pure black outlines on a pure white background, no shading, no gradients, no color fills, no gray areas.`,
+        `IMPORTANT: Do NOT include any text, letters, words, numbers, or written characters anywhere in the design.`,
+        `CRITICAL: The design MUST fill the ENTIRE canvas from edge to edge with NO empty margins or borders. Extend the scene, background elements, and details all the way to the edges of the image.`,
         `The design must be suitable for printing and coloring with colored pencils or markers.`,
-        `Clean, crisp vector-like line art quality. The drawing should fill the entire canvas.`,
+        `Clean, crisp vector-like line art quality.`,
     ].join('\n');
 }
 

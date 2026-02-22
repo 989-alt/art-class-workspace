@@ -1,0 +1,431 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1771732684998,
+  "projectRoot": "C:\\Users\\hit\\Desktop\\바이브코딩 공모전\\art class",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "react",
+        "version": "19.2.0",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.0",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "7.3.1",
+        "category": "build"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "vite",
+      "build": "tsc -b && vite build",
+      "lint": "eslint .",
+      "preview": "vite preview"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "public",
+      "src"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 2,
+      "lastAccessed": 1771732684949,
+      "keyFiles": [
+        "index.html",
+        "vite.svg"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 1,
+      "lastAccessed": 1771732684960,
+      "keyFiles": [
+        "vite.svg"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 4,
+      "lastAccessed": 1771732684960,
+      "keyFiles": [
+        "App.css",
+        "App.tsx",
+        "index.css",
+        "main.tsx"
+      ]
+    },
+    "~": {
+      "path": "~",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1771732684961,
+      "keyFiles": []
+    },
+    "dist\\assets": {
+      "path": "dist\\assets",
+      "purpose": "Static assets",
+      "fileCount": 6,
+      "lastAccessed": 1771732684962,
+      "keyFiles": [
+        "html2canvas.esm-DXEQVQnt.js",
+        "imagetracer_v1.2.6-DsEnSdq8.js",
+        "index-CrU7Tolr.css"
+      ]
+    },
+    "src\\assets": {
+      "path": "src\\assets",
+      "purpose": "Static assets",
+      "fileCount": 1,
+      "lastAccessed": 1771732684963,
+      "keyFiles": [
+        "react.svg"
+      ]
+    },
+    "src\\components": {
+      "path": "src\\components",
+      "purpose": "UI components",
+      "fileCount": 0,
+      "lastAccessed": 1771732684964,
+      "keyFiles": []
+    },
+    "src\\services": {
+      "path": "src\\services",
+      "purpose": "Business logic services",
+      "fileCount": 2,
+      "lastAccessed": 1771732684964,
+      "keyFiles": [
+        "geminiService.ts",
+        "promptBuilder.ts"
+      ]
+    },
+    "src\\types": {
+      "path": "src\\types",
+      "purpose": "Type definitions",
+      "fileCount": 2,
+      "lastAccessed": 1771732684965,
+      "keyFiles": [
+        "imagetracerjs.d.ts",
+        "index.ts"
+      ]
+    },
+    "src\\utils": {
+      "path": "src\\utils",
+      "purpose": "Utility functions",
+      "fileCount": 4,
+      "lastAccessed": 1771732684965,
+      "keyFiles": [
+        "apiKeyManager.ts",
+        "aspectRatio.ts",
+        "pdfExporter.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src\\components\\Form\\GeneratorForm.tsx",
+      "accessCount": 15,
+      "lastAccessed": 1771735643107,
+      "type": "file"
+    },
+    {
+      "path": "src\\App.tsx",
+      "accessCount": 15,
+      "lastAccessed": 1771736220599,
+      "type": "file"
+    },
+    {
+      "path": "src\\hooks\\useGeneration.ts",
+      "accessCount": 10,
+      "lastAccessed": 1771736817223,
+      "type": "file"
+    },
+    {
+      "path": "src\\types\\index.ts",
+      "accessCount": 8,
+      "lastAccessed": 1771735496216,
+      "type": "file"
+    },
+    {
+      "path": "src\\services\\promptBuilder.ts",
+      "accessCount": 8,
+      "lastAccessed": 1771736851281,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\GridSelector.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1771735672264,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Canvas\\SkeletonLoader.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1771736180199,
+      "type": "file"
+    },
+    {
+      "path": "src\\utils\\aspectRatio.ts",
+      "accessCount": 4,
+      "lastAccessed": 1771735553651,
+      "type": "file"
+    },
+    {
+      "path": "src\\utils\\pdfExporter.ts",
+      "accessCount": 4,
+      "lastAccessed": 1771735789978,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Canvas\\CanvasPreview.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1771736136749,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Export\\ExportPanel.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1771736453613,
+      "type": "file"
+    },
+    {
+      "path": "src\\services\\geminiService.ts",
+      "accessCount": 4,
+      "lastAccessed": 1771736773219,
+      "type": "file"
+    },
+    {
+      "path": "src\\App.css",
+      "accessCount": 3,
+      "lastAccessed": 1771735097638,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Canvas\\CanvasPreview.css",
+      "accessCount": 3,
+      "lastAccessed": 1771736150029,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Canvas\\SkeletonLoader.css",
+      "accessCount": 3,
+      "lastAccessed": 1771736194119,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\GeneratorForm.css",
+      "accessCount": 2,
+      "lastAccessed": 1771733603179,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\ModeSelector.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1771733610865,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\DifficultySlider.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1771733617812,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 2,
+      "lastAccessed": 1771734139321,
+      "type": "directory"
+    },
+    {
+      "path": "src\\components\\Form\\PaperSizeSelector.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1771735910130,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\MandalaPresets.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771733480765,
+      "type": "file"
+    },
+    {
+      "path": "src\\utils\\vectorizer.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771733483188,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Canvas\\QuickEditBar.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771733489572,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 1,
+      "lastAccessed": 1771733514231,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 1,
+      "lastAccessed": 1771733517269,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\History\\HistoryStack.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771733523314,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Onboarding\\ApiKeySetup.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771733526173,
+      "type": "file"
+    },
+    {
+      "path": "src\\hooks\\useHistory.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771733529124,
+      "type": "file"
+    },
+    {
+      "path": "src\\hooks\\useApiKey.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771733531614,
+      "type": "file"
+    },
+    {
+      "path": "src\\utils\\apiKeyManager.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771733536775,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\common\\Header.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771733539645,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\GridSelector.css",
+      "accessCount": 1,
+      "lastAccessed": 1771733548742,
+      "type": "file"
+    },
+    {
+      "path": "src\\index.css",
+      "accessCount": 1,
+      "lastAccessed": 1771733551536,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\ModeSelector.css",
+      "accessCount": 1,
+      "lastAccessed": 1771733616425,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\OrientationSelector.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771734034357,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\OrientationSelector.css",
+      "accessCount": 1,
+      "lastAccessed": 1771734046625,
+      "type": "file"
+    },
+    {
+      "path": "src\\utils\\zipExporter.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771734835308,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\GenerationCountSelector.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771734845745,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\GenerationCountSelector.css",
+      "accessCount": 1,
+      "lastAccessed": 1771734858722,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Gallery\\Gallery.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771734876108,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Gallery\\Gallery.css",
+      "accessCount": 1,
+      "lastAccessed": 1771734896968,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Form\\PaperSizeSelector.css",
+      "accessCount": 1,
+      "lastAccessed": 1771735526893,
+      "type": "file"
+    },
+    {
+      "path": "src\\utils\\imageResizer.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771736430667,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

@@ -1,8 +1,12 @@
+import type { Orientation, PaperSize } from '../../types';
+import { PAPER_DIMENSIONS } from '../../types';
 import './GridSelector.css';
 
 interface GridSelectorProps {
     gridN: number;
     gridM: number;
+    orientation: Orientation;
+    paperSize: PaperSize;
     onGridNChange: (n: number) => void;
     onGridMChange: (m: number) => void;
     disabled: boolean;
@@ -10,7 +14,12 @@ interface GridSelectorProps {
 
 const options = [1, 2, 3, 4, 5, 6];
 
-export default function GridSelector({ gridN, gridM, onGridNChange, onGridMChange, disabled }: GridSelectorProps) {
+export default function GridSelector({ gridN, gridM, orientation, paperSize, onGridNChange, onGridMChange, disabled }: GridSelectorProps) {
+    // Get paper dimensions based on size and orientation
+    const baseDimensions = PAPER_DIMENSIONS[paperSize];
+    const pieceW = orientation === 'vertical' ? baseDimensions.width : baseDimensions.height;
+    const pieceH = orientation === 'vertical' ? baseDimensions.height : baseDimensions.width;
+
     return (
         <div className="grid-sel">
             <label className="grid-sel__label">분할 그리드 (N × M)</label>
@@ -54,7 +63,7 @@ export default function GridSelector({ gridN, gridM, onGridNChange, onGridMChang
                     style={{
                         gridTemplateColumns: `repeat(${gridN}, 1fr)`,
                         gridTemplateRows: `repeat(${gridM}, 1fr)`,
-                        aspectRatio: `${gridN * 210} / ${gridM * 297}`,
+                        aspectRatio: `${gridN * pieceW} / ${gridM * pieceH}`,
                     }}
                 >
                     {Array.from({ length: gridN * gridM }).map((_, i) => (
@@ -62,7 +71,7 @@ export default function GridSelector({ gridN, gridM, onGridNChange, onGridMChang
                     ))}
                 </div>
                 <span className="grid-sel__info">
-                    총 {gridN * gridM}장 A4 출력
+                    총 {gridN * gridM}장 {paperSize} 출력
                 </span>
             </div>
         </div>
