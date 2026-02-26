@@ -82,3 +82,38 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* Font Selector */
+.gen-form__font-selector {
+    display: flex;
+    gap: 8px;
+}
+
+.gen-form__font-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gen-form__font-btn:hover:not(:disabled) {
+    border-color: var(--primary);
+    background: rgba(102, 126, 234, 0.06);
+}
+
+.gen-form__font-btn--active {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%);
+    color: var(--primary);
+}
+
+.gen-form__font-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

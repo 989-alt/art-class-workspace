@@ -1,5 +1,14 @@
 export type Mode = 'free' | 'mandala';
 
+export type ArtStyle = 'line-art' | 'still-life' | 'watercolor' | 'oil-painting' | 'pointillism' | 'calligraphy';
+
+export type CalligraphyFont = 'panbonche' | 'gungche';
+
+export const CALLIGRAPHY_FONT_LABELS: Record<CalligraphyFont, string> = {
+  panbonche: '판본체',
+  gungche: '궁체',
+};
+
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export type Orientation = 'vertical' | 'horizontal';
@@ -52,8 +61,20 @@ export const ORIENTATION_LABELS: Record<Orientation, string> = {
   horizontal: '가로',
 };
 
+export const ART_STYLE_LABELS: Record<ArtStyle, string> = {
+  'line-art': '선화',
+  'still-life': '정물화',
+  'watercolor': '수채화',
+  'oil-painting': '유화',
+  'pointillism': '점묘화',
+  'calligraphy': '서예',
+};
+
 export interface GenerationConfig {
   mode: Mode;
+  artStyle: ArtStyle;
+  calligraphyText?: string;
+  calligraphyFont?: CalligraphyFont;
   topic: string;
   mandalaPreset: MandalaPreset;
   difficulty: Difficulty;
