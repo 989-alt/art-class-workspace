@@ -1,0 +1,167 @@
+[debug] [2026-03-02T13:36:01.222Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T13:36:01.224Z] > authorizing via signed-in user (seonhak989@gmail.com)
+[debug] [2026-03-02T13:36:01.224Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T13:36:01.224Z] > authorizing via signed-in user (seonhak989@gmail.com)
+[debug] [2026-03-02T13:36:01.225Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:01.225Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:01.225Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:36:01.226Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:36:01.226Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:01.228Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:01.228Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:01.228Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:36:01.228Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:36:01.228Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:01.229Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T13:36:01.229Z] > authorizing via signed-in user (seonhak989@gmail.com)
+[debug] [2026-03-02T13:36:01.229Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:01.229Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:01.229Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:36:01.229Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:36:01.229Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:01.398Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:36:01.398Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:01.399Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo [none]
+[debug] [2026-03-02T13:36:01.401Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:36:01.401Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:01.401Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo [none]
+[debug] [2026-03-02T13:36:01.406Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:36:01.406Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:01.407Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo [none]
+[debug] [2026-03-02T13:36:01.744Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo 401
+[debug] [2026-03-02T13:36:01.744Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.cloud.billing.v1.CloudBilling.GetProjectBillingInfo","service":"cloudbilling.googleapis.com"}}]}}
+[debug] [2026-03-02T13:36:01.744Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-03-02T13:36:01.744Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:01.744Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:01.744Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:36:01.744Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:36:01.744Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:01.826Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:36:01.826Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:01.947Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo 401
+[debug] [2026-03-02T13:36:01.947Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.cloud.billing.v1.CloudBilling.GetProjectBillingInfo","service":"cloudbilling.googleapis.com"}}]}}
+[debug] [2026-03-02T13:36:01.947Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-03-02T13:36:01.947Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:01.947Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:01.947Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:36:01.947Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:36:01.947Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:02.042Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:36:02.042Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:02.563Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo 401
+[debug] [2026-03-02T13:36:02.563Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.cloud.billing.v1.CloudBilling.GetProjectBillingInfo","service":"cloudbilling.googleapis.com"}}]}}
+[debug] [2026-03-02T13:36:02.563Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-03-02T13:36:02.563Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:02.563Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:36:02.563Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:36:02.563Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:36:02.563Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:36:02.644Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:41:34.322Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T13:41:34.324Z] > authorizing via signed-in user (seonhak989@gmail.com)
+[debug] [2026-03-02T13:41:34.324Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T13:41:34.324Z] > authorizing via signed-in user (seonhak989@gmail.com)
+[debug] [2026-03-02T13:41:34.325Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:34.325Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:34.325Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:41:34.326Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:41:34.326Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:34.327Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:34.327Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:34.327Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:41:34.328Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:41:34.328Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:34.328Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T13:41:34.328Z] > authorizing via signed-in user (seonhak989@gmail.com)
+[debug] [2026-03-02T13:41:34.328Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:34.328Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:34.328Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:41:34.328Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:41:34.328Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:34.495Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:41:34.495Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:34.495Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo [none]
+[debug] [2026-03-02T13:41:34.496Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:41:34.496Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:34.496Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo [none]
+[debug] [2026-03-02T13:41:34.503Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:41:34.503Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:34.503Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo [none]
+[debug] [2026-03-02T13:41:34.871Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo 401
+[debug] [2026-03-02T13:41:34.871Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.cloud.billing.v1.CloudBilling.GetProjectBillingInfo","service":"cloudbilling.googleapis.com"}}]}}
+[debug] [2026-03-02T13:41:34.871Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-03-02T13:41:34.871Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:34.871Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:34.871Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:41:34.871Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:41:34.871Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:34.954Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:41:34.954Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:35.031Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo 401
+[debug] [2026-03-02T13:41:35.031Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"service":"cloudbilling.googleapis.com","method":"google.cloud.billing.v1.CloudBilling.GetProjectBillingInfo"}}]}}
+[debug] [2026-03-02T13:41:35.031Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-03-02T13:41:35.031Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:35.031Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:35.031Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:41:35.031Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:41:35.031Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:35.112Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:41:35.112Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:35.854Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo 401
+[debug] [2026-03-02T13:41:35.854Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"service":"cloudbilling.googleapis.com","method":"google.cloud.billing.v1.CloudBilling.GetProjectBillingInfo"}}]}}
+[debug] [2026-03-02T13:41:35.854Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-03-02T13:41:35.854Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:35.854Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:41:35.854Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:41:35.854Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:41:35.854Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:41:35.939Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:53:54.579Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T13:53:54.581Z] > authorizing via signed-in user (seonhak989@gmail.com)
+[debug] [2026-03-02T13:53:54.582Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T13:53:54.582Z] > authorizing via signed-in user (seonhak989@gmail.com)
+[debug] [2026-03-02T13:53:54.582Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:53:54.582Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:53:54.582Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:53:54.583Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:53:54.583Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:53:54.584Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:53:54.584Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:53:54.584Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:53:54.585Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:53:54.585Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:53:54.585Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T13:53:54.585Z] > authorizing via signed-in user (seonhak989@gmail.com)
+[debug] [2026-03-02T13:53:54.585Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:53:54.585Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:53:54.585Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:53:54.585Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:53:54.585Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:53:54.753Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:53:54.754Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:53:54.754Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo [none]
+[debug] [2026-03-02T13:53:54.780Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:53:54.780Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:53:54.780Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo [none]
+[debug] [2026-03-02T13:53:54.786Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:53:54.786Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:53:54.786Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo [none]
+[debug] [2026-03-02T13:53:55.932Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo 401
+[debug] [2026-03-02T13:53:55.932Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.cloud.billing.v1.CloudBilling.GetProjectBillingInfo","service":"cloudbilling.googleapis.com"}}]}}
+[debug] [2026-03-02T13:53:55.932Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-03-02T13:53:55.932Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:53:55.932Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:53:55.932Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:53:55.933Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:53:55.933Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:53:56.027Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-02T13:53:56.027Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:53:56.139Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo 401
+[debug] [2026-03-02T13:53:56.139Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/project-language-9f542/billingInfo {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.cloud.billing.v1.CloudBilling.GetProjectBillingInfo","service":"cloudbilling.googleapis.com"}}]}}
+[debug] [2026-03-02T13:53:56.139Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-03-02T13:53:56.139Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:53:56.139Z] Checked if tokens are valid: false, expires at: 1771615322441
+[debug] [2026-03-02T13:53:56.139Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T13:53:56.139Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T13:53:56.139Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T13:53:56.229Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400

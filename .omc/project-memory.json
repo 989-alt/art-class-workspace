@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1772129075019,
+  "lastScanned": 1772458554534,
   "projectRoot": "C:\\Users\\hit\\Desktop\\바이브코딩 공모전\\art class - 복사본",
   "techStack": {
     "languages": [
@@ -74,7 +74,7 @@
       "path": "dist",
       "purpose": "Distribution/build output",
       "fileCount": 2,
-      "lastAccessed": 1772129074984,
+      "lastAccessed": 1772458554497,
       "keyFiles": [
         "index.html",
         "vite.svg"
@@ -84,7 +84,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 1,
-      "lastAccessed": 1772129074985,
+      "lastAccessed": 1772458554507,
       "keyFiles": [
         "vite.svg"
       ]
@@ -93,7 +93,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 4,
-      "lastAccessed": 1772129074994,
+      "lastAccessed": 1772458554508,
       "keyFiles": [
         "App.css",
         "App.tsx",
@@ -105,14 +105,14 @@
       "path": "~",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1772129074995,
+      "lastAccessed": 1772458554509,
       "keyFiles": []
     },
     "dist\\assets": {
       "path": "dist\\assets",
       "purpose": "Static assets",
       "fileCount": 6,
-      "lastAccessed": 1772129074996,
+      "lastAccessed": 1772458554509,
       "keyFiles": [
         "html2canvas.esm-DXEQVQnt.js",
         "imagetracer_v1.2.6-BB7i8N6n.js",
@@ -123,7 +123,7 @@
       "path": "src\\assets",
       "purpose": "Static assets",
       "fileCount": 1,
-      "lastAccessed": 1772129074997,
+      "lastAccessed": 1772458554510,
       "keyFiles": [
         "react.svg"
       ]
@@ -132,14 +132,14 @@
       "path": "src\\components",
       "purpose": "UI components",
       "fileCount": 0,
-      "lastAccessed": 1772129074998,
+      "lastAccessed": 1772458554511,
       "keyFiles": []
     },
     "src\\services": {
       "path": "src\\services",
       "purpose": "Business logic services",
       "fileCount": 2,
-      "lastAccessed": 1772129074998,
+      "lastAccessed": 1772458554511,
       "keyFiles": [
         "geminiService.ts",
         "promptBuilder.ts"
@@ -149,7 +149,7 @@
       "path": "src\\types",
       "purpose": "Type definitions",
       "fileCount": 2,
-      "lastAccessed": 1772129074999,
+      "lastAccessed": 1772458554512,
       "keyFiles": [
         "imagetracerjs.d.ts",
         "index.ts"
@@ -159,7 +159,7 @@
       "path": "src\\utils",
       "purpose": "Utility functions",
       "fileCount": 6,
-      "lastAccessed": 1772129075000,
+      "lastAccessed": 1772458554512,
       "keyFiles": [
         "apiKeyManager.ts",
         "aspectRatio.ts",
