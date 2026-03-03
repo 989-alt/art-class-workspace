@@ -32,9 +32,7 @@ export class CalligraphyUnavailableError extends Error {
 }
 
 /**
- * Gemini model fallback chain for image generation.
- * Primary: gemini-3.1-flash-image-preview
- * Fallback: gemini-2.5-flash-image
+ * Gemini model fallback chain (text rendering capable, for calligraphy)
  */
 const GEMINI_MODELS = [
     'gemini-2.5-flash-image',
@@ -42,8 +40,9 @@ const GEMINI_MODELS = [
 ];
 
 /**
- * Generate an image using Gemini/Imagen models.
- * Fallback chain: gemini-3.1-flash-image-preview → gemini-2.5-flash-image → imagen-4.0-ultra-generate-001
+ * Generate an image using Imagen/Gemini models.
+ * Non-calligraphy: imagen-4.0-ultra (best quality) → gemini-2.5-flash-image → gemini-3.1-flash-image-preview
+ * Calligraphy: gemini models only (text rendering required)
  * Returns the base64-encoded image data.
  */
 export async function generateImage(
@@ -75,7 +74,16 @@ export async function generateImage(
         throw new CalligraphyUnavailableError();
     }
 
-    // Non-calligraphy: try Gemini models, then Imagen fallback
+    // Non-calligraphy: Imagen Ultra first (best quality), then Gemini fallback
+    try {
+        console.log('Trying model: imagen-4.0-ultra-generate-001');
+        return await generateWithImagen(ai, 'imagen-4.0-ultra-generate-001', enhancedPrompt, options?.aspectRatio);
+    } catch (err) {
+        if (err instanceof SafetyFilterError) throw err;
+        console.warn('imagen-4.0-ultra-generate-001 failed:', err);
+    }
+
+    // Fallback: Gemini models
     for (const model of GEMINI_MODELS) {
         try {
             console.log(`Trying model: ${model}`);
@@ -84,15 +92,6 @@ export async function generateImage(
             if (err instanceof SafetyFilterError) throw err;
             console.warn(`${model} failed:`, err);
         }
-    }
-
-    // Final fallback: imagen-4.0-ultra-generate-001
-    try {
-        console.log('Trying model: imagen-4.0-ultra-generate-001');
-        return await generateWithImagen(ai, 'imagen-4.0-ultra-generate-001', enhancedPrompt, options?.aspectRatio);
-    } catch (err) {
-        if (err instanceof SafetyFilterError) throw err;
-        console.warn('imagen-4.0-ultra-generate-001 failed:', err);
     }
 
     throw new Error('이미지를 생성하지 못했습니다. 다시 시도해 주세요.');
@@ -208,6 +207,8 @@ async function generateWithImagen(
 
 /**
  * Edit an existing image using Gemini's image+text-to-image capability.
+ * Fallback chain: gemini-2.5-flash-image → gemini-3.1-flash-image-preview
+ * (Imagen not supported for editing — requires image input)
  * Returns the base64-encoded edited image data.
  */
 export async function editImage(
@@ -217,51 +218,62 @@ export async function editImage(
 ): Promise<string> {
     const ai = new GoogleGenAI({ apiKey });
 
-    const response = await withTimeout(
-        ai.models.generateContent({
-            model: 'gemini-3-pro-image-preview',
-            contents: [
-                {
-                    role: 'user',
-                    parts: [
+    const fullPrompt = `${editPrompt}\n\nIMPORTANT: The result must remain a black and white line art coloring page with pure black outlines on white background. No shading, no gradients, no colors. Maintain the exact same aspect ratio and ensure the design fills the entire canvas.`;
+
+    for (const model of GEMINI_MODELS) {
+        try {
+            console.log(`Edit: trying ${model}`);
+            const response = await withTimeout(
+                ai.models.generateContent({
+                    model,
+                    contents: [
                         {
-                            inlineData: {
-                                mimeType: 'image/png',
-                                data: imageBase64,
-                            },
-                        },
-                        {
-                            text: `${editPrompt}\n\nIMPORTANT: The result must remain a black and white line art coloring page with pure black outlines on white background. No shading, no gradients, no colors. Maintain the exact same aspect ratio and ensure the design fills the entire canvas.`,
+                            role: 'user',
+                            parts: [
+                                {
+                                    inlineData: {
+                                        mimeType: 'image/png',
+                                        data: imageBase64,
+                                    },
+                                },
+                                { text: fullPrompt },
+                            ],
                         },
                     ],
-                },
-            ],
-            config: {
-                responseModalities: ['Text', 'Image'],
-            },
-        }),
-        API_TIMEOUT_MS,
-        'gemini-2.5-flash (edit)'
-    );
+                    config: {
+                        responseModalities: ['TEXT', 'IMAGE'],
+                    },
+                }),
+                API_TIMEOUT_MS,
+                `${model} (edit)`
+            );
 
-    if (!response.candidates || response.candidates.length === 0) {
-        throw new Error('AI가 수정 응답을 생성하지 못했습니다.');
-    }
+            if (!response.candidates || response.candidates.length === 0) {
+                throw new Error(`${model}: No candidates returned`);
+            }
 
-    const candidate = response.candidates[0];
+            const candidate = response.candidates[0];
 
-    if (candidate.finishReason === 'SAFETY') {
-        throw new SafetyFilterError('⚠️ 안전 정책에 의해 이미지 수정이 차단되었습니다.');
-    }
+            if (candidate.finishReason === 'SAFETY') {
+                throw new SafetyFilterError('⚠️ 안전 정책에 의해 이미지 수정이 차단되었습니다.');
+            }
 
-    const parts = candidate.content?.parts;
-    if (!parts) {
-        throw new Error('수정 응답에 이미지 데이터가 없습니다.');
-    }
+            const parts = candidate.content?.parts;
+            if (!parts) {
+                throw new Error(`${model}: No parts in response`);
+            }
 
-    for (const part of parts) {
-        if (part.inlineData && part.inlineData.data) {
-            return part.inlineData.data;
+            for (const part of parts) {
+                if (part.inlineData && part.inlineData.data) {
+                    console.log(`Successfully edited image with ${model}`);
+                    return part.inlineData.data;
+                }
+            }
+
+            throw new Error(`${model}: No image data found`);
+        } catch (err) {
+            if (err instanceof SafetyFilterError) throw err;
+            console.warn(`${model} failed for edit:`, err);
         }
     }
 
