@@ -26,15 +26,24 @@ interface GenerateImageOptions {
  */
 export class CalligraphyUnavailableError extends Error {
     constructor() {
-        super('⚠️ 서예(캘리그래피) 도안은 텍스트 렌더링이 가능한 gemini-3-pro-image-preview 모델에서만 생성할 수 있습니다. 현재 해당 모델이 과부하 상태(503)이거나 사용 불가하여 서예 도안을 생성할 수 없습니다. 잠시 후 다시 시도하거나, 다른 화풍을 선택해 주세요.');
+        super('⚠️ 서예(캘리그래피) 도안 생성에 실패했습니다. 잠시 후 다시 시도하거나, 다른 화풍을 선택해 주세요.');
         this.name = 'CalligraphyUnavailableError';
     }
 }
 
 /**
+ * Gemini model fallback chain for image generation.
+ * Primary: gemini-3.1-flash-image-preview
+ * Fallback: gemini-2.5-flash-image
+ */
+const GEMINI_MODELS = [
+    'gemini-2.5-flash-image',
+    'gemini-3.1-flash-image-preview',
+];
+
+/**
  * Generate an image using Gemini/Imagen models.
- * - For calligraphy: only gemini-3-pro-image-preview (text rendering required)
- * - For other styles: gemini-3-pro-image-preview → imagen-4.0-ultra-generate-001 fallback
+ * Fallback chain: gemini-3.1-flash-image-preview → gemini-2.5-flash-image → imagen-4.0-ultra-generate-001
  * Returns the base64-encoded image data.
  */
 export async function generateImage(
@@ -52,29 +61,32 @@ export async function generateImage(
 
     const isCalligraphy = options?.artStyle === 'calligraphy';
 
-    // Calligraphy requires text rendering → only gemini-3-pro-image-preview supports this
+    // Calligraphy: try Gemini models (text rendering capable), no Imagen fallback
     if (isCalligraphy) {
+        for (const model of GEMINI_MODELS) {
+            try {
+                console.log(`Calligraphy mode: trying ${model}`);
+                return await generateWithGemini(ai, model, enhancedPrompt);
+            } catch (err) {
+                if (err instanceof SafetyFilterError) throw err;
+                console.warn(`${model} failed for calligraphy:`, err);
+            }
+        }
+        throw new CalligraphyUnavailableError();
+    }
+
+    // Non-calligraphy: try Gemini models, then Imagen fallback
+    for (const model of GEMINI_MODELS) {
         try {
-            console.log('Calligraphy mode: trying gemini-3-pro-image-preview (text rendering required)');
-            return await generateWithGemini(ai, 'gemini-3-pro-image-preview', enhancedPrompt);
+            console.log(`Trying model: ${model}`);
+            return await generateWithGemini(ai, model, enhancedPrompt);
         } catch (err) {
             if (err instanceof SafetyFilterError) throw err;
-            console.error('gemini-3-pro-image-preview failed for calligraphy:', err);
-            throw new CalligraphyUnavailableError();
+            console.warn(`${model} failed:`, err);
         }
     }
 
-    // For non-calligraphy styles: try gemini-3-pro-image-preview, then imagen-4.0-ultra-generate-001
-    // Step 1: Try gemini-3-pro-image-preview via generateContent
-    try {
-        console.log('Trying model: gemini-3-pro-image-preview');
-        return await generateWithGemini(ai, 'gemini-3-pro-image-preview', enhancedPrompt);
-    } catch (err) {
-        if (err instanceof SafetyFilterError) throw err;
-        console.warn('gemini-3-pro-image-preview failed:', err);
-    }
-
-    // Step 2: Fallback to imagen-4.0-ultra-generate-001 via generateImages
+    // Final fallback: imagen-4.0-ultra-generate-001
     try {
         console.log('Trying model: imagen-4.0-ultra-generate-001');
         return await generateWithImagen(ai, 'imagen-4.0-ultra-generate-001', enhancedPrompt, options?.aspectRatio);
@@ -128,6 +140,36 @@ async function generateWithGemini(ai: GoogleGenAI, model: string, prompt: string
 }
 
 /**
+ * Map any aspect ratio string to the nearest Imagen-supported ratio.
+ * Imagen supports: 1:1, 9:16, 16:9, 4:3, 3:4
+ */
+function toSupportedImagenRatio(ratio?: string): string {
+    if (!ratio) return '1:1';
+    const parts = ratio.split(':');
+    if (parts.length !== 2) return '1:1';
+    const value = Number(parts[0]) / Number(parts[1]);
+
+    const supported: [string, number][] = [
+        ['1:1', 1],
+        ['4:3', 4 / 3],
+        ['3:4', 3 / 4],
+        ['16:9', 16 / 9],
+        ['9:16', 9 / 16],
+    ];
+
+    let closest = supported[0];
+    let minDiff = Math.abs(value - closest[1]);
+    for (const entry of supported) {
+        const diff = Math.abs(value - entry[1]);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closest = entry;
+        }
+    }
+    return closest[0];
+}
+
+/**
  * Generate image using Imagen model via generateImages API
  */
 async function generateWithImagen(
@@ -136,13 +178,14 @@ async function generateWithImagen(
     prompt: string,
     aspectRatio?: string
 ): Promise<string> {
+    const imagenRatio = toSupportedImagenRatio(aspectRatio);
     const response = await withTimeout(
         ai.models.generateImages({
             model,
             prompt,
             config: {
                 numberOfImages: 1,
-                aspectRatio: aspectRatio || '1:1',
+                aspectRatio: imagenRatio,
             },
         }),
         API_TIMEOUT_MS,
