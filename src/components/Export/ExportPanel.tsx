@@ -13,8 +13,16 @@ interface ExportPanelProps {
     orientation: Orientation;
 }
 
+// "인쇄 옵션"
+const PRINT_OPTIONS_TITLE = '인쇄 옵션';
+// "워터마크"
+const WATERMARK_LABEL = '워터마크';
+// "SEONBI's Art Class · Gemini · 날짜 하단 표기"
+const WATERMARK_HINT = "SEONBI's Art Class · Gemini · 날짜 하단 표기";
+
 export default function ExportPanel({ image, gridN, gridM, paperSize, orientation }: ExportPanelProps) {
     const [isExporting, setIsExporting] = useState<'png' | 'svg' | 'pdf' | null>(null);
+    const [watermark, setWatermark] = useState(true);
 
     if (!image) return null;
 
@@ -50,7 +58,7 @@ export default function ExportPanel({ image, gridN, gridM, paperSize, orientatio
         try {
             // Resize image first, then export to PDF
             const resizedImage = await resizeImageToAspectRatio(image, gridN, gridM, paperSize, orientation);
-            await exportToPdf(resizedImage, gridN, gridM, paperSize, orientation);
+            await exportToPdf(resizedImage, gridN, gridM, paperSize, orientation, { watermark });
         } catch (err) {
             console.error('PDF 생성 실패:', err);
             alert('PDF 생성 중 오류가 발생했습니다.');
@@ -62,6 +70,22 @@ export default function ExportPanel({ image, gridN, gridM, paperSize, orientatio
     return (
         <div className="export-panel">
             <h3 className="export-panel__title">내보내기</h3>
+
+            <div className="export-panel__options">
+                <div className="export-panel__options-title">{PRINT_OPTIONS_TITLE}</div>
+                <label className="export-panel__option">
+                    <input
+                        type="checkbox"
+                        checked={watermark}
+                        onChange={(e) => setWatermark(e.target.checked)}
+                    />
+                    <span className="export-panel__option-label">
+                        <span>{WATERMARK_LABEL}</span>
+                        <span className="export-panel__option-hint">{WATERMARK_HINT}</span>
+                    </span>
+                </label>
+            </div>
+
             <div className="export-panel__buttons">
                 <button
                     className="export-panel__btn export-panel__btn--png"

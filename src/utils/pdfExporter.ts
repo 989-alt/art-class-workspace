@@ -2,9 +2,19 @@ import { jsPDF } from 'jspdf';
 import type { PaperSize, Orientation } from '../types';
 import { PAPER_DIMENSIONS } from '../types';
 
+export interface PdfExportOptions {
+    watermark?: boolean;
+    watermarkText?: string;
+}
+
 /**
  * Export the generated image as a multi-page PDF,
  * split into N x M grid pieces, each on a separate page at (0,0) with no margins.
+ *
+ * When `options.watermark !== false`, a small grey watermark is printed at the
+ * bottom-center of every page in the format:
+ *   SEONBI's Art Class · Gemini · YYYY-MM-DD HH:mm
+ * (timestamp = PDF generation time).
  */
 export async function exportToPdf(
     base64Image: string,
@@ -12,6 +22,7 @@ export async function exportToPdf(
     gridM: number,
     paperSize: PaperSize = 'A4',
     orientation: Orientation = 'vertical',
+    options?: PdfExportOptions,
     filename: string = 'art-class-도안.pdf'
 ): Promise<void> {
     // Load image into canvas
@@ -40,6 +51,10 @@ export async function exportToPdf(
         unit: 'mm',
         format: format,
     });
+
+    // Resolve watermark settings — default: on
+    const watermarkEnabled = options?.watermark !== false;
+    const watermarkText = options?.watermarkText ?? buildDefaultWatermark();
 
     let isFirstPage = true;
 
@@ -71,6 +86,13 @@ export async function exportToPdf(
 
             // Add image at (0, 0) filling entire page — no margins
             doc.addImage(pieceDataUrl, 'PNG', 0, 0, pageW, pageH);
+
+            // Watermark at bottom-center, 3mm from bottom edge
+            if (watermarkEnabled) {
+                doc.setTextColor(153); // #999
+                doc.setFontSize(6);
+                doc.text(watermarkText, pageW / 2, pageH - 3, { align: 'center' });
+            }
         }
     }
 
@@ -84,4 +106,18 @@ function loadImage(src: string): Promise<HTMLImageElement> {
         img.onerror = () => reject(new Error('이미지를 불러올 수 없습니다.'));
         img.src = src;
     });
+}
+
+function buildDefaultWatermark(): string {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = pad2(now.getMonth() + 1);
+    const dd = pad2(now.getDate());
+    const hh = pad2(now.getHours());
+    const mi = pad2(now.getMinutes());
+    return `SEONBI's Art Class · Gemini · ${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+}
+
+function pad2(n: number): string {
+    return n < 10 ? `0${n}` : `${n}`;
 }

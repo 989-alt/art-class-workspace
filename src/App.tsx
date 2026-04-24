@@ -3,6 +3,7 @@ import { useApiKey } from './hooks/useApiKey';
 import { useGeneration } from './hooks/useGeneration';
 import { useHistory } from './hooks/useHistory';
 import { exportToZip } from './utils/zipExporter';
+import { applyLineWeightBoost } from './utils/lineWeightBoost';
 import type { GenerationConfig, GalleryItem, PaperSize, Orientation } from './types';
 
 import Header from './components/common/Header';
@@ -20,6 +21,13 @@ import './App.css';
 
 type ViewMode = 'generator' | 'gallery' | 'detail';
 
+// "선 굵기 +20% 보정이 적용되었습니다."
+const BOOST_APPLIED_MESSAGE = '선 굵기 +20% 보정이 적용되었습니다.';
+// "이미 적용됨"
+const BOOST_ALREADY_MESSAGE = '이미 적용됨';
+// "선 굵기 보정 중 오류가 발생했습니다."
+const BOOST_ERROR_MESSAGE = '선 굵기 보정 중 오류가 발생했습니다.';
+
 export default function App() {
   const { apiKey, hasApiKey, isLoaded, setApiKey, clearApiKey } = useApiKey();
   const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, setToast, clearToast } = useGeneration();
@@ -35,6 +43,10 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>('generator');
   const [activeItem, setActiveItem] = useState<GalleryItem | null>(null);
+
+  // Line-boost applied flags — per active item id. Prevents stacking the
+  // dilation effect when the teacher clicks "적용" multiple times.
+  const [boostedIds, setBoostedIds] = useState<Set<string>>(new Set());
 
   const handleGenerate = useCallback(
     async (config: GenerationConfig, count: number) => {
@@ -156,6 +168,37 @@ export default function App() {
       handleImageEdited();
     }
   }, [undo, setCurrentImage, handleImageEdited]);
+
+  // Apply line-weight boost to the current image. Idempotent per gallery item:
+  // if already applied, show a subtle toast and bail out.
+  const handleApplyLineBoost = useCallback(async () => {
+    if (!currentImage || !activeItem) return;
+    if (boostedIds.has(activeItem.id)) {
+      setToast({ id: '', type: 'warning', message: BOOST_ALREADY_MESSAGE });
+      return;
+    }
+    try {
+      const boosted = await applyLineWeightBoost(currentImage);
+      push(currentImage); // preserve pre-boost for undo
+      setCurrentImage(boosted);
+      // Reflect in gallery and active item
+      setGallery((prev) =>
+        prev.map((g) =>
+          g.id === activeItem.id ? { ...g, image: boosted } : g
+        )
+      );
+      setActiveItem((prev) => (prev ? { ...prev, image: boosted } : null));
+      setBoostedIds((prev) => {
+        const next = new Set(prev);
+        next.add(activeItem.id);
+        return next;
+      });
+      setToast({ id: '', type: 'success', message: BOOST_APPLIED_MESSAGE });
+    } catch (err) {
+      console.error('Line boost failed:', err);
+      setToast({ id: '', type: 'error', message: BOOST_ERROR_MESSAGE });
+    }
+  }, [currentImage, activeItem, boostedIds, push, setCurrentImage, setToast]);
 
   const handleKeySet = useCallback(
     (key: string) => {
@@ -287,6 +330,7 @@ export default function App() {
                 paperSize={paperSize}
                 orientation={orientation}
                 isLoading={isLoading}
+                onApplyLineBoost={handleApplyLineBoost}
               />
 
               {currentImage && (
