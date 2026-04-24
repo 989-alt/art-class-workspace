@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useApiKey } from './hooks/useApiKey';
 import { useGeneration } from './hooks/useGeneration';
 import { useHistory } from './hooks/useHistory';
@@ -20,10 +20,21 @@ import ExportPanel from './components/Export/ExportPanel';
 import Gallery from './components/Gallery/Gallery';
 import TeacherAuthGate from './components/Classroom/TeacherAuthGate';
 import SessionHost from './components/Classroom/SessionHost';
+import StudentVoteView from './components/Classroom/StudentVoteView';
 
 import './App.css';
 
 type ViewMode = 'generator' | 'gallery' | 'detail' | 'classroom';
+
+// Match /session/ABC123 anywhere in the pathname suffix so this works under
+// GitHub Pages subpaths (e.g. /art-class/session/ABC123) without hardcoding
+// the base. The session code alphabet excludes I, O, 0, 1 (see sessionCode.ts).
+const STUDENT_PATH_REGEX = /\/session\/([A-HJ-NP-Z2-9]{6})\/?$/i;
+
+function detectStudentSessionCode(pathname: string): string | null {
+  const match = pathname.match(STUDENT_PATH_REGEX);
+  return match ? match[1].toUpperCase() : null;
+}
 
 // Derive the curriculum unit label for the copyright certificate.
 // Returns null when the active item wasn't generated from a curriculum preset.
@@ -72,6 +83,20 @@ function ClassroomView({
 }
 
 export default function App() {
+  // Student route detection: react to back/forward and initial mount.
+  // Kept above any other hooks so the order is stable across re-renders.
+  const [studentCode, setStudentCode] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? detectStudentSessionCode(window.location.pathname) : null
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handler = () => {
+      setStudentCode(detectStudentSessionCode(window.location.pathname));
+    };
+    window.addEventListener('popstate', handler);
+    return () => window.removeEventListener('popstate', handler);
+  }, []);
+
   const { apiKey, hasApiKey, isLoaded, setApiKey, clearApiKey } = useApiKey();
   const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, setToast, clearToast } = useGeneration();
   const { historyCount, maxDepth, canUndo, push, undo, clear } = useHistory();
@@ -313,6 +338,12 @@ export default function App() {
     clearApiKey();
     setShowKeySetup(false);
   }, [clearApiKey]);
+
+  // Student route: render a minimal standalone page. No header, no workspace,
+  // no teacher auth. Students do NOT need an API key.
+  if (studentCode) {
+    return <StudentVoteView sessionCode={studentCode} />;
+  }
 
   // Wait for localStorage load
   if (!isLoaded) return null;
