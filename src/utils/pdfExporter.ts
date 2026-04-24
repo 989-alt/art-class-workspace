@@ -1,10 +1,21 @@
 import { jsPDF } from 'jspdf';
 import type { PaperSize, Orientation } from '../types';
 import { PAPER_DIMENSIONS } from '../types';
+import {
+    drawCertificatePage,
+    type CertificateMetadata,
+} from './copyrightCertificate';
 
 export interface PdfExportOptions {
     watermark?: boolean;
     watermarkText?: string;
+    /**
+     * When true (default), a copyright certificate page is appended to the
+     * PDF as the last page. Requires `certificateMeta` to be provided;
+     * when missing the flag is silently ignored.
+     */
+    certificate?: boolean;
+    certificateMeta?: CertificateMetadata;
 }
 
 /**
@@ -87,13 +98,21 @@ export async function exportToPdf(
             // Add image at (0, 0) filling entire page — no margins
             doc.addImage(pieceDataUrl, 'PNG', 0, 0, pageW, pageH);
 
-            // Watermark at bottom-center, 3mm from bottom edge
+            // Watermark at bottom-center, 3mm from bottom edge.
+            // Certificate page (appended below) deliberately skips the
+            // watermark — it is itself a provenance surface.
             if (watermarkEnabled) {
                 doc.setTextColor(153); // #999
                 doc.setFontSize(6);
                 doc.text(watermarkText, pageW / 2, pageH - 3, { align: 'center' });
             }
         }
+    }
+
+    // Append the copyright certificate as the last page when requested.
+    const certificateEnabled = options?.certificate !== false;
+    if (certificateEnabled && options?.certificateMeta) {
+        drawCertificatePage(doc, options.certificateMeta);
     }
 
     doc.save(filename);

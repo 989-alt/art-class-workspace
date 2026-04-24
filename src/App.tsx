@@ -4,6 +4,7 @@ import { useGeneration } from './hooks/useGeneration';
 import { useHistory } from './hooks/useHistory';
 import { exportToZip } from './utils/zipExporter';
 import { applyLineWeightBoost } from './utils/lineWeightBoost';
+import { CURRICULUM_PRESETS } from './data/curriculumPresets';
 import type { GenerationConfig, GalleryItem, PaperSize, Orientation } from './types';
 
 import Header from './components/common/Header';
@@ -21,6 +22,17 @@ import './App.css';
 
 type ViewMode = 'generator' | 'gallery' | 'detail';
 
+// Derive the curriculum unit label for the copyright certificate.
+// Returns null when the active item wasn't generated from a curriculum preset.
+function deriveUnitLabel(item: GalleryItem | null): string | null {
+  if (!item) return null;
+  const { config } = item;
+  if (config.mode !== 'curriculum' || !config.presetId) return null;
+  const preset = CURRICULUM_PRESETS.find((p) => p.id === config.presetId);
+  if (!preset) return null;
+  return `${preset.grade}-${preset.semester} ${preset.subject} 「${preset.unitTitle}」`;
+}
+
 // "선 굵기 +20% 보정이 적용되었습니다."
 const BOOST_APPLIED_MESSAGE = '선 굵기 +20% 보정이 적용되었습니다.';
 // "이미 적용됨"
@@ -30,7 +42,7 @@ const BOOST_ERROR_MESSAGE = '선 굵기 보정 중 오류가 발생했습니다.
 
 export default function App() {
   const { apiKey, hasApiKey, isLoaded, setApiKey, clearApiKey } = useApiKey();
-  const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, setToast, clearToast } = useGeneration();
+  const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, setToast, clearToast, lastPrompt } = useGeneration();
   const { historyCount, maxDepth, canUndo, push, undo, clear } = useHistory();
   const [showKeySetup, setShowKeySetup] = useState(false);
   const [gridN, setGridN] = useState(1);
@@ -286,7 +298,15 @@ export default function App() {
             onToast={setToast}
           />
           {viewMode === 'detail' && currentImage && (
-            <ExportPanel image={currentImage} gridN={gridN} gridM={gridM} paperSize={paperSize} orientation={orientation} />
+            <ExportPanel
+              image={currentImage}
+              gridN={gridN}
+              gridM={gridM}
+              paperSize={paperSize}
+              orientation={orientation}
+              lastPrompt={lastPrompt}
+              unitLabel={deriveUnitLabel(activeItem)}
+            />
           )}
 
           {/* Gallery link when not in gallery view */}

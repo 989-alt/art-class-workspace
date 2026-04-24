@@ -38,6 +38,35 @@
     user-select: none;
 }
 
+.export-panel__option + .export-panel__option {
+    margin-top: 8px;
+}
+
+.export-panel__option--text {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    cursor: default;
+    margin-bottom: 10px;
+}
+
+.export-panel__teacher-input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    color: var(--text-primary);
+    box-sizing: border-box;
+}
+
+.export-panel__teacher-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
 .export-panel__option input[type="checkbox"] {
     margin-top: 2px;
     width: 16px;
