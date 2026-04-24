@@ -12,6 +12,8 @@ import { calculateAspectRatio } from '../../utils/aspectRatio';
 import VoteOptionsEditor, { FIXED_PALETTES, FIXED_DETAILS } from './VoteOptionsEditor';
 import VoteDashboard from './VoteDashboard';
 import TeacherReviewPanel from './TeacherReviewPanel';
+import ClassGallery from './ClassGallery';
+import { getTeacherName, DEFAULT_TEACHER_NAME } from '../../utils/teacherProfile';
 import './SessionHost.css';
 
 interface SessionHostProps {
@@ -382,6 +384,18 @@ export default function SessionHost({
                         </button>
                     </div>
                     <TeacherReviewPanel sessionId={session.id} />
+                    <ClassGallery
+                        sessionId={session.id}
+                        sessionCode={session.code}
+                        unitTitle={preset.unitTitle}
+                        unitCode={preset.unitCode}
+                        teacherName={
+                            (() => {
+                                const t = getTeacherName();
+                                return t && t !== DEFAULT_TEACHER_NAME ? t : null;
+                            })()
+                        }
+                    />
                 </section>
             ) : (
                 <section className="session-host__grid">
