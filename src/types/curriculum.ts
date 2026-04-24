@@ -22,4 +22,10 @@ export interface CurriculumPreset {
   teachingNote: string;
   learningObjectives: string[];
   timeEstimate: number;
+  /**
+   * If true, the preset is a "공통" (all-grades-common) preset. The Grade type is
+   * restricted to 1-6, so common presets still need a placeholder `grade` value
+   * — but this boolean is the source of truth for the "공통" filter and badge.
+   */
+  isCommon?: boolean;
 }

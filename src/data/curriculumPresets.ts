@@ -268,6 +268,7 @@ export const CURRICULUM_PRESETS: CurriculumPreset[] = [
   },
   {
     id: 'all-seasons-mandala',
+    isCommon: true,
     grade: 3,
     semester: 1,
     subject: '미술',
@@ -294,6 +295,7 @@ export const CURRICULUM_PRESETS: CurriculumPreset[] = [
   },
   {
     id: 'all-emotion-characters',
+    isCommon: true,
     grade: 3,
     semester: 1,
     subject: '도덕',

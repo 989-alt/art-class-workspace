@@ -22,7 +22,7 @@ type ViewMode = 'generator' | 'gallery' | 'detail';
 
 export default function App() {
   const { apiKey, hasApiKey, isLoaded, setApiKey, clearApiKey } = useApiKey();
-  const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, clearToast } = useGeneration();
+  const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, setToast, clearToast } = useGeneration();
   const { historyCount, maxDepth, canUndo, push, undo, clear } = useHistory();
   const [showKeySetup, setShowKeySetup] = useState(false);
   const [gridN, setGridN] = useState(1);
@@ -213,6 +213,7 @@ export default function App() {
           <GeneratorForm
             isLoading={isLoading}
             onGenerate={handleGenerate}
+            onToast={setToast}
           />
           {viewMode === 'detail' && currentImage && (
             <ExportPanel image={currentImage} gridN={gridN} gridM={gridM} paperSize={paperSize} orientation={orientation} />

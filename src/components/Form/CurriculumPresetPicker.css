@@ -72,6 +72,18 @@
     cursor: not-allowed;
 }
 
+.curriculum-picker__filter-chip--empty {
+    opacity: 0.4;
+}
+
+.curriculum-picker__filter-chip:focus-visible,
+.curriculum-picker__card:focus-visible,
+.curriculum-picker__topic-chip:focus-visible,
+.curriculum-picker__note-toggle:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
 .curriculum-picker__empty {
     padding: 20px;
     text-align: center;

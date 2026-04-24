@@ -13,6 +13,7 @@ interface UseGenerationReturn {
     edit: (apiKey: string, editType: string) => Promise<void>;
     setCurrentImage: (image: string | null) => void;
     toast: ToastMessage | null;
+    setToast: (toast: ToastMessage | null) => void;
     clearToast: () => void;
 }
 
@@ -27,13 +28,22 @@ export function useGeneration(): UseGenerationReturn {
     const [currentImage, setCurrentImage] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [generationProgress, setGenerationProgress] = useState<{ current: number; total: number } | null>(null);
-    const [toast, setToast] = useState<ToastMessage | null>(null);
+    const [toast, setToastState] = useState<ToastMessage | null>(null);
 
     const showToast = useCallback((type: ToastMessage['type'], message: string) => {
-        setToast({ id: `toast-${++toastCounter}`, type, message });
+        setToastState({ id: `toast-${++toastCounter}`, type, message });
     }, []);
 
-    const clearToast = useCallback(() => setToast(null), []);
+    const setToast = useCallback((next: ToastMessage | null) => {
+        if (next === null) {
+            setToastState(null);
+            return;
+        }
+        // Ensure every externally-set toast gets a unique id so re-renders animate correctly.
+        setToastState({ ...next, id: next.id || `toast-${++toastCounter}` });
+    }, []);
+
+    const clearToast = useCallback(() => setToastState(null), []);
 
     const generate = useCallback(
         async (
@@ -46,31 +56,26 @@ export function useGeneration(): UseGenerationReturn {
             setGenerationProgress({ current: 0, total: count });
             clearToast();
 
+            // Resolve prompt. For curriculum mode with a presetId, require the preset to exist —
+            // otherwise surface an error rather than silently falling back to a Korean topic.
             let prompt: string;
             if (config.mode === 'curriculum' && config.presetId) {
                 const preset = CURRICULUM_PRESETS.find((p) => p.id === config.presetId);
-                if (preset) {
-                    prompt = buildPromptFromPreset(
-                        preset,
-                        config.selectedTopic ?? null,
-                        config.difficulty,
-                        config.orientation,
-                        config.paperSize,
-                        config.gridN,
-                        config.gridM
-                    );
-                } else {
-                    prompt = buildPrompt(
-                        config.mode,
-                        config.topic,
-                        config.mandalaPreset,
-                        config.difficulty,
-                        config.orientation,
-                        config.paperSize,
-                        config.gridN,
-                        config.gridM
-                    );
+                if (!preset) {
+                    showToast('error', PRESET_NOT_FOUND_MESSAGE);
+                    setGenerationProgress(null);
+                    setIsLoading(false);
+                    return;
                 }
+                prompt = buildPromptFromPreset(
+                    preset,
+                    config.selectedTopic ?? null,
+                    config.difficulty,
+                    config.orientation,
+                    config.paperSize,
+                    config.gridN,
+                    config.gridM
+                );
             } else {
                 prompt = buildPrompt(
                     config.mode,
@@ -121,9 +126,9 @@ export function useGeneration(): UseGenerationReturn {
             setIsLoading(false);
 
             if (successCount > 0) {
-                showToast('success', `✨ ${successCount}개의 도안이 생성되었습니다!`);
+                showToast('success', `${SUCCESS_PREFIX}${successCount}${SUCCESS_SUFFIX}`);
             } else if (errorCount > 0) {
-                showToast('error', '이미지 생성에 실패했습니다. 다시 시도해 주세요.');
+                showToast('error', FAIL_MESSAGE);
             }
         },
         [clearToast, showToast]
@@ -138,12 +143,12 @@ export function useGeneration(): UseGenerationReturn {
                 const editPrompt = buildEditPrompt(editType);
                 const editedData = await editImage(apiKey, currentImage, editPrompt);
                 setCurrentImage(editedData);
-                showToast('success', '✏️ 도안이 수정되었습니다!');
+                showToast('success', EDIT_SUCCESS_MESSAGE);
             } catch (err) {
                 if (err instanceof SafetyFilterError) {
                     showToast('warning', err.message);
                 } else {
-                    showToast('error', err instanceof Error ? err.message : '이미지 수정 중 오류가 발생했습니다.');
+                    showToast('error', err instanceof Error ? err.message : EDIT_FAIL_MESSAGE);
                 }
             } finally {
                 setIsLoading(false);
@@ -160,6 +165,27 @@ export function useGeneration(): UseGenerationReturn {
         edit,
         setCurrentImage,
         toast,
+        setToast,
         clearToast,
     };
 }
+
+// Korean strings are defined via \uXXXX escapes to avoid any editor/tool
+// corruption of multi-byte sequences.
+// "선택한 프리셋을 찾을 수 없습니다."
+const PRESET_NOT_FOUND_MESSAGE =
+    '선택한 프리셋을 찾을 수 없습니다.';
+// "✨ "
+const SUCCESS_PREFIX = '✨ ';
+// "개의 도안이 생성되었습니다!"
+const SUCCESS_SUFFIX =
+    '개의 도안이 생성되었습니다!';
+// "이미지 생성에 실패했습니다. 다시 시도해 주세요."
+const FAIL_MESSAGE =
+    '이미지 생성에 실패했습니다. 다시 시도해 주세요.';
+// "✏️ 도안이 수정되었습니다!"
+const EDIT_SUCCESS_MESSAGE =
+    '✏️ 도안이 수정되었습니다!';
+// "이미지 수정 중 오류가 발생했습니다."
+const EDIT_FAIL_MESSAGE =
+    '이미지 수정 중 오류가 발생했습니다.';

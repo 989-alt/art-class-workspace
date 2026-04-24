@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import type { GenerationConfig, Mode, Difficulty, MandalaPreset, Orientation, PaperSize } from '../../types';
+import { useMemo, useState } from 'react';
+import type { GenerationConfig, Mode, Difficulty, MandalaPreset, Orientation, PaperSize, ToastMessage } from '../../types';
 import type { CurriculumPreset } from '../../types/curriculum';
+import { CURRICULUM_PRESETS } from '../../data/curriculumPresets';
 import ModeSelector from './ModeSelector';
 import DifficultySlider from './DifficultySlider';
 import OrientationSelector from './OrientationSelector';
@@ -14,9 +15,10 @@ import './GeneratorForm.css';
 interface GeneratorFormProps {
     isLoading: boolean;
     onGenerate: (config: GenerationConfig, count: number) => void;
+    onToast?: (toast: ToastMessage) => void;
 }
 
-export default function GeneratorForm({ isLoading, onGenerate }: GeneratorFormProps) {
+export default function GeneratorForm({ isLoading, onGenerate, onToast }: GeneratorFormProps) {
     const [mode, setMode] = useState<Mode>('free');
     const [topic, setTopic] = useState('');
     const [mandalaPreset, setMandalaPreset] = useState<MandalaPreset>('flower');
@@ -28,17 +30,32 @@ export default function GeneratorForm({ isLoading, onGenerate }: GeneratorFormPr
     const [generationCount, setGenerationCount] = useState(1);
     const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
     const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-    const [activePreset, setActivePreset] = useState<CurriculumPreset | null>(null);
+
+    // Derive activePreset from selectedPresetId — single source of truth.
+    const activePreset = useMemo<CurriculumPreset | null>(
+        () => CURRICULUM_PRESETS.find((p) => p.id === selectedPresetId) ?? null,
+        [selectedPresetId]
+    );
 
     const handlePresetSelect = (preset: CurriculumPreset) => {
+        // Re-clicking the same preset is a no-op — don't wipe manual slider adjustments.
+        if (preset.id === selectedPresetId) return;
+
         setSelectedPresetId(preset.id);
-        setActivePreset(preset);
         setSelectedTopic(null);
         setDifficulty(preset.difficulty);
         setOrientation(preset.defaultOrientation);
         setPaperSize(preset.defaultPaper);
         setGridN(preset.defaultGrid.n);
         setGridM(preset.defaultGrid.m);
+
+        if (onToast) {
+            onToast({
+                id: `preset-applied-${Date.now()}`,
+                type: 'success',
+                message: '프리셋 기본값을 적용했습니다.',
+            });
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {

@@ -14,6 +14,26 @@ const DIFFICULTY_MAP: Record<Difficulty, string> = {
     hard: 'highly detailed and intricate patterns with fine lines and complex elements, suitable for advanced students',
 };
 
+// Shared tail applied to every prompt variant (free / mandala / curriculum preset).
+// Kept byte-identical to the previous inline versions. Note the two canvas-fill
+// variants: the mandala branch says "Extend patterns and decorative elements..."
+// while the free and curriculum branches say "Extend the scene, background..."
+const COMMON_TAIL_SCENE: string[] = [
+    `Requirements: pure black outlines on a pure white background, no shading, no gradients, no color fills, no gray areas.`,
+    `IMPORTANT: Do NOT include any text, letters, words, numbers, or written characters anywhere in the design.`,
+    `CRITICAL: The design MUST fill the ENTIRE canvas from edge to edge with NO empty margins or borders. Extend the scene, background elements, and details all the way to the edges of the image.`,
+    `The design must be suitable for printing and coloring with colored pencils or markers.`,
+    `Clean, crisp vector-like line art quality.`,
+];
+
+const COMMON_TAIL_MANDALA: string[] = [
+    `Requirements: pure black outlines on a pure white background, no shading, no gradients, no color fills, no gray areas.`,
+    `IMPORTANT: Do NOT include any text, letters, words, numbers, or written characters anywhere in the design.`,
+    `CRITICAL: The design MUST fill the ENTIRE canvas from edge to edge with NO empty margins or borders. Extend patterns and decorative elements all the way to the edges of the image.`,
+    `The design must be suitable for printing and coloring with colored pencils or markers.`,
+    `Clean, crisp vector-like line art quality.`,
+];
+
 export function buildPrompt(
     mode: Mode,
     topic: string,
@@ -35,11 +55,7 @@ export function buildPrompt(
             `Style: ${difficultyDesc}.`,
             `The mandala should be a symmetric, circular pattern centered in the image.`,
             `Layout: ${orientationDesc}. Aspect ratio MUST be exactly ${aspectRatio}.`,
-            `Requirements: pure black outlines on a pure white background, no shading, no gradients, no color fills, no gray areas.`,
-            `IMPORTANT: Do NOT include any text, letters, words, numbers, or written characters anywhere in the design.`,
-            `CRITICAL: The design MUST fill the ENTIRE canvas from edge to edge with NO empty margins or borders. Extend patterns and decorative elements all the way to the edges of the image.`,
-            `The design must be suitable for printing and coloring with colored pencils or markers.`,
-            `Clean, crisp vector-like line art quality.`,
+            ...COMMON_TAIL_MANDALA,
         ].join('\n');
     }
 
@@ -47,11 +63,7 @@ export function buildPrompt(
         `Create a black and white line art coloring page of "${topic}".`,
         `Style: ${difficultyDesc}.`,
         `Layout: ${orientationDesc}. Aspect ratio MUST be exactly ${aspectRatio}.`,
-        `Requirements: pure black outlines on a pure white background, no shading, no gradients, no color fills, no gray areas.`,
-        `IMPORTANT: Do NOT include any text, letters, words, numbers, or written characters anywhere in the design.`,
-        `CRITICAL: The design MUST fill the ENTIRE canvas from edge to edge with NO empty margins or borders. Extend the scene, background elements, and details all the way to the edges of the image.`,
-        `The design must be suitable for printing and coloring with colored pencils or markers.`,
-        `Clean, crisp vector-like line art quality.`,
+        ...COMMON_TAIL_SCENE,
     ].join('\n');
 }
 
@@ -96,11 +108,7 @@ export function buildPromptFromPreset(
     lines.push(
         `Style: ${difficultyDesc}.`,
         `Layout: ${orientationDesc}. Aspect ratio MUST be exactly ${aspectRatio}.`,
-        `Requirements: pure black outlines on a pure white background, no shading, no gradients, no color fills, no gray areas.`,
-        `IMPORTANT: Do NOT include any text, letters, words, numbers, or written characters anywhere in the design.`,
-        `CRITICAL: The design MUST fill the ENTIRE canvas from edge to edge with NO empty margins or borders. Extend the scene, background elements, and details all the way to the edges of the image.`,
-        `The design must be suitable for printing and coloring with colored pencils or markers.`,
-        `Clean, crisp vector-like line art quality.`,
+        ...COMMON_TAIL_SCENE,
     );
 
     return lines.join('\n');

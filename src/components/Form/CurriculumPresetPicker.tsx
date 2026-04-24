@@ -16,7 +16,7 @@ type GradeFilter = Grade | 'all';
 type SubjectFilter = Subject | 'all';
 
 const GRADE_OPTIONS: { value: GradeFilter; label: string }[] = [
-    { value: 'all', label: '전학년' },
+    { value: 'all', label: '공통' },
     { value: 1, label: '1학년' },
     { value: 2, label: '2학년' },
     { value: 3, label: '3학년' },
@@ -36,7 +36,7 @@ const SUBJECT_OPTIONS: { value: SubjectFilter; label: string }[] = [
 ];
 
 function isCommonPreset(preset: CurriculumPreset): boolean {
-    return preset.unitCode.startsWith('공통-');
+    return preset.isCommon === true;
 }
 
 export default function CurriculumPresetPicker({
@@ -53,9 +53,10 @@ export default function CurriculumPresetPicker({
     const filteredPresets = useMemo(() => {
         return CURRICULUM_PRESETS.filter((preset) => {
             if (gradeFilter === 'all') {
-                // "전학년" filter shows only common-across-all-grades presets
+                // "공통" filter shows only all-grades-common presets (isCommon === true).
                 if (!isCommonPreset(preset)) return false;
             } else {
+                // Specific grade: always include common presets + that grade's presets.
                 if (isCommonPreset(preset)) return true;
                 if (preset.grade !== gradeFilter) return false;
             }
@@ -63,6 +64,25 @@ export default function CurriculumPresetPicker({
             return true;
         });
     }, [gradeFilter, subjectFilter]);
+
+    // Count matches per grade filter so we can dim chips that would show zero presets.
+    const gradeMatchCounts = useMemo(() => {
+        const counts = new Map<GradeFilter, number>();
+        for (const opt of GRADE_OPTIONS) {
+            const count = CURRICULUM_PRESETS.filter((preset) => {
+                if (opt.value === 'all') {
+                    if (!isCommonPreset(preset)) return false;
+                } else {
+                    if (isCommonPreset(preset)) return true;
+                    if (preset.grade !== opt.value) return false;
+                }
+                if (subjectFilter !== 'all' && preset.subject !== subjectFilter) return false;
+                return true;
+            }).length;
+            counts.set(opt.value, count);
+        }
+        return counts;
+    }, [subjectFilter]);
 
     const selectedPreset = useMemo(
         () => CURRICULUM_PRESETS.find((p) => p.id === selectedId) ?? null,
@@ -85,21 +105,26 @@ export default function CurriculumPresetPicker({
                 <div className="curriculum-picker__filter-row">
                     <span className="curriculum-picker__filter-title">학년</span>
                     <div className="curriculum-picker__chips">
-                        {GRADE_OPTIONS.map((opt) => (
-                            <button
-                                key={String(opt.value)}
-                                type="button"
-                                className={`curriculum-picker__filter-chip ${
-                                    gradeFilter === opt.value
-                                        ? 'curriculum-picker__filter-chip--active'
-                                        : ''
-                                }`}
-                                onClick={() => setGradeFilter(opt.value)}
-                                disabled={disabled}
-                            >
-                                {opt.label}
-                            </button>
-                        ))}
+                        {GRADE_OPTIONS.map((opt) => {
+                            const isEmpty = (gradeMatchCounts.get(opt.value) ?? 0) === 0;
+                            const isDisabled = disabled || isEmpty;
+                            return (
+                                <button
+                                    key={String(opt.value)}
+                                    type="button"
+                                    className={`curriculum-picker__filter-chip ${
+                                        gradeFilter === opt.value
+                                            ? 'curriculum-picker__filter-chip--active'
+                                            : ''
+                                    } ${isEmpty ? 'curriculum-picker__filter-chip--empty' : ''}`}
+                                    onClick={() => setGradeFilter(opt.value)}
+                                    disabled={isDisabled}
+                                    aria-disabled={isDisabled}
+                                >
+                                    {opt.label}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
