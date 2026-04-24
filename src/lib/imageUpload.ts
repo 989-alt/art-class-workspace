@@ -72,12 +72,12 @@ export interface UploadResult {
 }
 
 /**
- * Uploads a blob to `classroom-submissions/{sessionId}/{studentToken}-{ts}.jpg`
+ * Uploads a blob to `classroom-submissions/{assignmentId}/{studentToken}-{ts}.jpg`
  * and returns the public URL. Requires the bucket to be marked Public in the
  * Supabase dashboard (see SUPABASE_SETUP.md step 4).
  */
 export async function uploadSubmission(
-    sessionId: string,
+    assignmentId: string,
     studentToken: string,
     blob: Blob
 ): Promise<UploadResult> {
@@ -86,7 +86,7 @@ export async function uploadSubmission(
 
     const timestamp = Date.now();
     const safeToken = studentToken.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 36);
-    const path = `${sessionId}/${safeToken}-${timestamp}.jpg`;
+    const path = `${assignmentId}/${safeToken}-${timestamp}.jpg`;
 
     const { error: uploadError } = await supabase.storage
         .from(BUCKET)

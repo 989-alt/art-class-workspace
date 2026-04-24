@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useApiKey } from './hooks/useApiKey';
 import { useGeneration } from './hooks/useGeneration';
 import { useHistory } from './hooks/useHistory';
@@ -19,14 +19,23 @@ import Gallery from './components/Gallery/Gallery';
 import TeacherAuthGate from './components/Classroom/TeacherAuthGate';
 import ClassroomPanel from './components/Classroom/ClassroomPanel';
 import PublishAssignmentDialog from './components/Classroom/PublishAssignmentDialog';
+import StudentClassView from './components/Classroom/StudentClassView';
 import { useClassroom } from './hooks/useClassroom';
 import { useAssignments } from './hooks/useAssignments';
 import { uploadClassroomAsset } from './lib/assetUpload';
 import { isSupabaseConfigured } from './lib/supabaseClient';
 
-// TODO(v3-T4): Student /class/:code route lands in a later task.
-
 import './App.css';
+
+// Hash route pattern for the student entry point. The classroom-code alphabet
+// matches utils/classroomCode (no I, O, 0, 1). Trailing slash optional.
+const STUDENT_HASH_ROUTE = /^#\/class\/([A-HJ-NP-Z2-9]{6})\/?$/i;
+
+function parseStudentHash(): string | null {
+    if (typeof window === 'undefined') return null;
+    const m = window.location.hash.match(STUDENT_HASH_ROUTE);
+    return m ? m[1].toUpperCase() : null;
+}
 
 type ViewMode = 'generator' | 'gallery' | 'detail' | 'classroom';
 
@@ -38,8 +47,17 @@ const BOOST_ALREADY_MESSAGE = '이미 적용됨';
 const BOOST_ERROR_MESSAGE = '선 굵기 보정 중 오류가 발생했습니다.';
 
 export default function App() {
-  // TODO(v3-T4): v2 student vote route was removed in v3-T0; v3 will introduce
-  // /class/:code instead.
+  // Student route: derived from window.location.hash. When set, the entire
+  // teacher UI (including Header) is replaced with StudentClassView.
+  const [studentCode, setStudentCode] = useState<string | null>(() => parseStudentHash());
+
+  useEffect(() => {
+    const onHashChange = () => {
+      setStudentCode(parseStudentHash());
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   const { apiKey, hasApiKey, isLoaded, setApiKey, clearApiKey } = useApiKey();
   const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, setToast, clearToast } = useGeneration();
@@ -318,6 +336,12 @@ export default function App() {
     setPublishError(null);
     setViewMode('classroom');
   }, []);
+
+  // Student route takes precedence over the entire teacher UI. Renders before
+  // we even consult API key state — students don't have a key.
+  if (studentCode) {
+    return <StudentClassView code={studentCode} />;
+  }
 
   // Wait for localStorage load
   if (!isLoaded) return null;
