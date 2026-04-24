@@ -28,6 +28,14 @@ export default function ModeSelector({ mode, onModeChange, disabled }: ModeSelec
                 >
                     🔮 만다라
                 </button>
+                <button
+                    type="button"
+                    className={`mode-sel__tab ${mode === 'curriculum' ? 'mode-sel__tab--active' : ''}`}
+                    onClick={() => onModeChange('curriculum')}
+                    disabled={disabled}
+                >
+                    📚 교과서
+                </button>
             </div>
         </div>
     );

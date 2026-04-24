@@ -1,4 +1,4 @@
-export type Mode = 'free' | 'mandala';
+export type Mode = 'free' | 'mandala' | 'curriculum';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -52,6 +52,12 @@ export const ORIENTATION_LABELS: Record<Orientation, string> = {
   horizontal: '가로',
 };
 
+export const MODE_LABELS: Record<Mode, string> = {
+  free: '자유 주제',
+  mandala: '만다라',
+  curriculum: '교과서',
+};
+
 export interface GenerationConfig {
   mode: Mode;
   topic: string;
@@ -61,6 +67,8 @@ export interface GenerationConfig {
   paperSize: PaperSize;
   gridN: number;
   gridM: number;
+  presetId?: string;
+  selectedTopic?: string | null;
 }
 
 export interface ToastMessage {

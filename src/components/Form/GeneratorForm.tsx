@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import type { GenerationConfig, Mode, Difficulty, MandalaPreset, Orientation, PaperSize } from '../../types';
+import type { CurriculumPreset } from '../../types/curriculum';
 import ModeSelector from './ModeSelector';
 import DifficultySlider from './DifficultySlider';
 import OrientationSelector from './OrientationSelector';
 import PaperSizeSelector from './PaperSizeSelector';
 import GridSelector from './GridSelector';
 import MandalaPresets from './MandalaPresets';
+import CurriculumPresetPicker from './CurriculumPresetPicker';
 import GenerationCountSelector from './GenerationCountSelector';
 import './GeneratorForm.css';
 
@@ -24,14 +26,54 @@ export default function GeneratorForm({ isLoading, onGenerate }: GeneratorFormPr
     const [gridN, setGridN] = useState(1);
     const [gridM, setGridM] = useState(1);
     const [generationCount, setGenerationCount] = useState(1);
+    const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
+    const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+    const [activePreset, setActivePreset] = useState<CurriculumPreset | null>(null);
+
+    const handlePresetSelect = (preset: CurriculumPreset) => {
+        setSelectedPresetId(preset.id);
+        setActivePreset(preset);
+        setSelectedTopic(null);
+        setDifficulty(preset.difficulty);
+        setOrientation(preset.defaultOrientation);
+        setPaperSize(preset.defaultPaper);
+        setGridN(preset.defaultGrid.n);
+        setGridM(preset.defaultGrid.m);
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (mode === 'free' && !topic.trim()) return;
-        onGenerate({ mode, topic, mandalaPreset, difficulty, orientation, paperSize, gridN, gridM }, generationCount);
+        if (mode === 'curriculum' && !selectedPresetId) return;
+
+        const resolvedTopic =
+            mode === 'curriculum' && activePreset
+                ? selectedTopic ?? activePreset.unitTitle
+                : topic;
+
+        const config: GenerationConfig = {
+            mode,
+            topic: resolvedTopic,
+            mandalaPreset,
+            difficulty,
+            orientation,
+            paperSize,
+            gridN,
+            gridM,
+        };
+
+        if (mode === 'curriculum') {
+            config.presetId = selectedPresetId ?? undefined;
+            config.selectedTopic = selectedTopic;
+        }
+
+        onGenerate(config, generationCount);
     };
 
-    const canSubmit = mode === 'mandala' || topic.trim().length > 0;
+    const canSubmit =
+        mode === 'mandala' ||
+        (mode === 'free' && topic.trim().length > 0) ||
+        (mode === 'curriculum' && selectedPresetId !== null);
 
     return (
         <form className="gen-form" onSubmit={handleSubmit}>
@@ -39,7 +81,7 @@ export default function GeneratorForm({ isLoading, onGenerate }: GeneratorFormPr
 
             <ModeSelector mode={mode} onModeChange={setMode} disabled={isLoading} />
 
-            {mode === 'free' ? (
+            {mode === 'free' && (
                 <div className="gen-form__field">
                     <label className="gen-form__label">주제 입력</label>
                     <input
@@ -52,11 +94,23 @@ export default function GeneratorForm({ isLoading, onGenerate }: GeneratorFormPr
                         maxLength={100}
                     />
                 </div>
-            ) : (
+            )}
+
+            {mode === 'mandala' && (
                 <MandalaPresets
                     selected={mandalaPreset}
                     onSelect={setMandalaPreset}
                     disabled={isLoading}
+                />
+            )}
+
+            {mode === 'curriculum' && (
+                <CurriculumPresetPicker
+                    selectedId={selectedPresetId}
+                    onSelect={handlePresetSelect}
+                    disabled={isLoading}
+                    selectedTopic={selectedTopic}
+                    onTopicChange={setSelectedTopic}
                 />
             )}
 

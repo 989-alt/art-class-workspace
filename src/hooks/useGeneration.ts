@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { generateImage, editImage, SafetyFilterError } from '../services/geminiService';
-import { buildPrompt, buildEditPrompt } from '../services/promptBuilder';
+import { buildPrompt, buildEditPrompt, buildPromptFromPreset } from '../services/promptBuilder';
 import { calculateAspectRatio } from '../utils/aspectRatio';
+import { CURRICULUM_PRESETS } from '../data/curriculumPresets';
 import type { GenerationConfig, ToastMessage, GalleryItem } from '../types';
 
 interface UseGenerationReturn {
@@ -45,16 +46,43 @@ export function useGeneration(): UseGenerationReturn {
             setGenerationProgress({ current: 0, total: count });
             clearToast();
 
-            const prompt = buildPrompt(
-                config.mode,
-                config.topic,
-                config.mandalaPreset,
-                config.difficulty,
-                config.orientation,
-                config.paperSize,
-                config.gridN,
-                config.gridM
-            );
+            let prompt: string;
+            if (config.mode === 'curriculum' && config.presetId) {
+                const preset = CURRICULUM_PRESETS.find((p) => p.id === config.presetId);
+                if (preset) {
+                    prompt = buildPromptFromPreset(
+                        preset,
+                        config.selectedTopic ?? null,
+                        config.difficulty,
+                        config.orientation,
+                        config.paperSize,
+                        config.gridN,
+                        config.gridM
+                    );
+                } else {
+                    prompt = buildPrompt(
+                        config.mode,
+                        config.topic,
+                        config.mandalaPreset,
+                        config.difficulty,
+                        config.orientation,
+                        config.paperSize,
+                        config.gridN,
+                        config.gridM
+                    );
+                }
+            } else {
+                prompt = buildPrompt(
+                    config.mode,
+                    config.topic,
+                    config.mandalaPreset,
+                    config.difficulty,
+                    config.orientation,
+                    config.paperSize,
+                    config.gridN,
+                    config.gridM
+                );
+            }
 
             // Calculate aspect ratio for the image generation
             const aspectRatio = calculateAspectRatio(

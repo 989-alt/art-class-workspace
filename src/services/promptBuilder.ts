@@ -1,5 +1,6 @@
 import type { Mode, Difficulty, MandalaPreset, Orientation, PaperSize } from '../types';
 import { MANDALA_PRESET_LABELS } from '../types';
+import type { CurriculumPreset } from '../types/curriculum';
 import { calculateAspectRatio } from '../utils/aspectRatio';
 
 const ORIENTATION_DESC: Record<Orientation, string> = {
@@ -68,4 +69,39 @@ export function buildEditPrompt(editType: string): string {
         editMap[editType] ||
         'Refine and improve this black and white line art coloring page. Keep the same subject.'
     );
+}
+
+export function buildPromptFromPreset(
+    preset: CurriculumPreset,
+    selectedTopic: string | null,
+    difficulty: Difficulty,
+    orientation: Orientation,
+    paperSize: PaperSize,
+    gridN: number,
+    gridM: number
+): string {
+    const aspectRatio = calculateAspectRatio(gridN, gridM, orientation, paperSize);
+    const difficultyDesc = DIFFICULTY_MAP[difficulty];
+    const orientationDesc = ORIENTATION_DESC[orientation];
+
+    const lines: string[] = [
+        preset.basePrompt,
+        preset.styleDirective,
+    ];
+
+    if (selectedTopic && selectedTopic.trim().length > 0) {
+        lines.push(`Focus subject: ${selectedTopic}.`);
+    }
+
+    lines.push(
+        `Style: ${difficultyDesc}.`,
+        `Layout: ${orientationDesc}. Aspect ratio MUST be exactly ${aspectRatio}.`,
+        `Requirements: pure black outlines on a pure white background, no shading, no gradients, no color fills, no gray areas.`,
+        `IMPORTANT: Do NOT include any text, letters, words, numbers, or written characters anywhere in the design.`,
+        `CRITICAL: The design MUST fill the ENTIRE canvas from edge to edge with NO empty margins or borders. Extend the scene, background elements, and details all the way to the edges of the image.`,
+        `The design must be suitable for printing and coloring with colored pencils or markers.`,
+        `Clean, crisp vector-like line art quality.`,
+    );
+
+    return lines.join('\n');
 }
