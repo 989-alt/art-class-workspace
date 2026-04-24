@@ -96,3 +96,30 @@
     background: rgba(0, 0, 0, 0.08);
     transform: rotate(45deg);
 }
+
+.header__classroom-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(102, 126, 234, 0.08);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4338ca;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.05s ease;
+}
+
+.header__classroom-btn:hover {
+    background: rgba(102, 126, 234, 0.16);
+}
+
+.header__classroom-btn:active {
+    transform: translateY(1px);
+}
+
+.header__classroom-text {
+    font-family: inherit;
+}

@@ -16,14 +16,14 @@ import QuickEditBar from './components/Canvas/QuickEditBar';
 import HistoryStack from './components/History/HistoryStack';
 import ExportPanel from './components/Export/ExportPanel';
 import Gallery from './components/Gallery/Gallery';
+import TeacherAuthGate from './components/Classroom/TeacherAuthGate';
+import ClassroomPanel from './components/Classroom/ClassroomPanel';
 
-// TODO(v3-T2/T4): Classroom and student routes are temporarily disabled while
-// the v3 LMS architecture is wired up. Lazy imports for SessionHost,
-// StudentVoteView, and TeacherAuthGate were removed in v3-T0.
+// TODO(v3-T4): Student /class/:code route lands in a later task.
 
 import './App.css';
 
-type ViewMode = 'generator' | 'gallery' | 'detail';
+type ViewMode = 'generator' | 'gallery' | 'detail' | 'classroom';
 
 // "선 굵기 +20% 보정이 적용되었습니다."
 const BOOST_APPLIED_MESSAGE = '선 굵기 +20% 보정이 적용되었습니다.';
@@ -251,6 +251,14 @@ export default function App() {
     setShowKeySetup(false);
   }, [clearApiKey]);
 
+  const handleOpenClassroom = useCallback(() => {
+    setViewMode('classroom');
+  }, []);
+
+  const handleBackFromClassroom = useCallback(() => {
+    setViewMode('generator');
+  }, []);
+
   // Wait for localStorage load
   if (!isLoaded) return null;
 
@@ -283,10 +291,30 @@ export default function App() {
     );
   }
 
+  if (viewMode === 'classroom') {
+    return (
+      <div className="app">
+        <Toast toast={toast} onClose={clearToast} />
+        <Header
+          apiKey={apiKey}
+          onSettingsClick={handleSettingsClick}
+          onOpenClassroom={handleOpenClassroom}
+        />
+        <TeacherAuthGate onBack={handleBackFromClassroom}>
+          <ClassroomPanel onBack={handleBackFromClassroom} />
+        </TeacherAuthGate>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <Toast toast={toast} onClose={clearToast} />
-      <Header apiKey={apiKey} onSettingsClick={handleSettingsClick} />
+      <Header
+        apiKey={apiKey}
+        onSettingsClick={handleSettingsClick}
+        onOpenClassroom={handleOpenClassroom}
+      />
 
       <main className="workspace">
         {/* Left Panel */}

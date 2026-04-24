@@ -1,0 +1,329 @@
+.classroom-panel {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+    box-sizing: border-box;
+}
+
+.classroom-panel__topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.classroom-panel__back {
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.classroom-panel__back:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.classroom-panel__title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.classroom-panel__status {
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 12px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.classroom-panel__status--error {
+    background: rgba(239, 68, 68, 0.08);
+    color: #b91c1c;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.classroom-panel__section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 12px;
+    color: var(--text-primary);
+}
+
+.classroom-panel__description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 20px;
+    line-height: 1.6;
+}
+
+/* ---------- create mode ---------- */
+
+.classroom-panel__create {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.classroom-panel__create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.classroom-panel__label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.classroom-panel__input {
+    padding: 10px 14px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.classroom-panel__input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.classroom-panel__submit {
+    margin-top: 4px;
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.05s ease;
+}
+
+.classroom-panel__submit:hover:not(:disabled) {
+    opacity: 0.92;
+}
+
+.classroom-panel__submit:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.classroom-panel__submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.classroom-panel__error {
+    margin: 0;
+    font-size: 13px;
+    color: #b91c1c;
+    background: rgba(239, 68, 68, 0.08);
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+/* ---------- manage mode ---------- */
+
+.classroom-panel__manage {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.classroom-panel__name-card,
+.classroom-panel__qr-card,
+.classroom-panel__assignments,
+.classroom-panel__gallery {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.classroom-panel__name-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.classroom-panel__name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.classroom-panel__name-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.classroom-panel__name-edit {
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.classroom-panel__name-edit:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.classroom-panel__rename-form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.classroom-panel__rename-form .classroom-panel__input {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.classroom-panel__rename-save,
+.classroom-panel__rename-cancel {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: opacity 0.15s ease;
+}
+
+.classroom-panel__rename-save {
+    background: #111111;
+    color: #ffffff;
+}
+
+.classroom-panel__rename-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.classroom-panel__rename-cancel {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: var(--text-primary);
+}
+
+/* ---------- QR card ---------- */
+
+.classroom-panel__qr-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.classroom-panel__qr-img {
+    width: 240px;
+    height: 240px;
+    image-rendering: pixelated;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.classroom-panel__qr-placeholder {
+    width: 240px;
+    height: 240px;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 12px;
+}
+
+.classroom-panel__code-row,
+.classroom-panel__url-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.classroom-panel__code-label,
+.classroom-panel__url-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 96px;
+}
+
+.classroom-panel__code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.03);
+    padding: 6px 14px;
+    border-radius: 8px;
+}
+
+.classroom-panel__url {
+    flex: 1 1 220px;
+    min-width: 0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classroom-panel__copy-btn {
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.classroom-panel__copy-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.classroom-panel__copy-notice {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: #047857;
+}
+
+/* ---------- placeholders ---------- */
+
+.classroom-panel__placeholder {
+    margin: 0;
+    padding: 14px 16px;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px dashed rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
