@@ -129,7 +129,23 @@ export function useStudentSession(sessionCode: string): UseStudentSessionReturn 
                     setSession((prev) => (prev ? { ...prev, ...updated } : updated));
                 }
             )
-            .subscribe();
+            .subscribe((st) => {
+                if (st === 'SUBSCRIBED') {
+                    // Re-fetch once after subscribe attaches, to catch updates missed
+                    // between the initial load and the subscribe callback.
+                    supabase
+                        .from('classroom_sessions')
+                        .select('*')
+                        .eq('id', sessionId)
+                        .maybeSingle()
+                        .then(({ data }) => {
+                            if (!data) return;
+                            setSession((prev) =>
+                                prev ? { ...prev, ...(data as ClassroomSession) } : prev
+                            );
+                        });
+                }
+            });
 
         channelRef.current = channel;
 

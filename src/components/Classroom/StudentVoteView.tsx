@@ -97,12 +97,15 @@ export default function StudentVoteView({ sessionCode }: StudentVoteViewProps) {
     );
 
     // Focus the first pill group title when transitioning between major states.
+    // Use a ref to detect actual status transitions so we don't steal focus on every render.
     const statusAnnouncementRef = useRef<HTMLDivElement | null>(null);
+    const prevStatusRef = useRef<typeof status>(status);
     useEffect(() => {
-        if (statusAnnouncementRef.current) {
+        if (prevStatusRef.current !== status && statusAnnouncementRef.current) {
             statusAnnouncementRef.current.focus();
         }
-    }, [status, hasSubmitted]);
+        prevStatusRef.current = status;
+    }, [status]);
 
     const unitLabel = useMemo(
         () => deriveUnitLabel(session?.preset_id ?? null),
@@ -155,7 +158,6 @@ export default function StudentVoteView({ sessionCode }: StudentVoteViewProps) {
                         className="student-view__waiting"
                         ref={statusAnnouncementRef}
                         tabIndex={-1}
-                        aria-live="polite"
                     >
                         <div className="student-view__spinner" aria-hidden="true" />
                         <p className="student-view__waiting-subtitle">{L.loading}</p>
@@ -228,7 +230,6 @@ export default function StudentVoteView({ sessionCode }: StudentVoteViewProps) {
                         className="student-view__result"
                         ref={statusAnnouncementRef}
                         tabIndex={-1}
-                        aria-live="polite"
                     >
                         <h1 className="student-view__result-title">{L.resultTitle}</h1>
                         <img
@@ -302,7 +303,6 @@ export default function StudentVoteView({ sessionCode }: StudentVoteViewProps) {
                         className="student-view__card"
                         ref={statusAnnouncementRef}
                         tabIndex={-1}
-                        aria-live="polite"
                     >
                         <div className="student-view__waiting">
                             <div className="student-view__check" aria-hidden="true">✓</div>
@@ -355,7 +355,6 @@ export default function StudentVoteView({ sessionCode }: StudentVoteViewProps) {
                         className="student-view__card"
                         ref={statusAnnouncementRef}
                         tabIndex={-1}
-                        aria-live="polite"
                     >
                         <div className="student-view__waiting">
                             <div className="student-view__spinner" aria-hidden="true" />
