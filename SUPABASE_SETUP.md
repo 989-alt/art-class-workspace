@@ -155,6 +155,7 @@ await (await import('/src/lib/supabaseClient.ts')).getSupabase()
 - **anon key는 공개돼도 안전합니다.** 프론트엔드 빌드에 포함되는 전제 키입니다.
 - 데이터 접근 제어는 `0004_rls_policies.sql` 의 Row Level Security 정책이 담당합니다.
 - 교사만 자신의 세션을 수정/삭제할 수 있고, 학생 토큰(`student_token`)은 브라우저 세션 단위로 발급돼 다른 학생 투표를 덮어쓸 수 없습니다.
+- 투표 기록(`session_votes`)은 교사만 조회할 수 있습니다. 학생 본인 투표값은 브라우저 로컬 상태에만 보관되며, 서버에서 다시 읽어오지 않습니다.
 - 민감 키(`service_role`, DB password)는 절대 `.env.local` 이외에 저장하지 마세요.
 
 ---
@@ -162,7 +163,7 @@ await (await import('/src/lib/supabaseClient.ts')).getSupabase()
 ## 문제 해결
 
 - **학급 모드 메뉴가 안 보임** → `.env.local` 값 확인 후 `npm run dev` 재시작 (Vite는 env 변경 시 재시작 필요)
-- **RLS 정책 오류** → `0004_rls_policies.sql` 이 누락됐거나 테이블 순서가 어긋남. `drop table ... cascade` 후 1번부터 재실행
+- **RLS 정책 오류** → `0004_rls_policies.sql` 은 이제 idempotent 합니다. 각 SQL 파일을 개별적으로 다시 실행해도 안전하므로, 오류 메시지를 확인하고 해당 파일만 재실행하세요.
 - **Realtime 이벤트 안 옴** → 대시보드 → Database → Replication 에서 해당 테이블 Realtime 활성화 확인 (필요 시 Task 5 작업에서 추가 설명)
 
 ---

@@ -25,3 +25,14 @@ export function getSupabase(): SupabaseClient | null {
   });
   return cachedClient;
 }
+
+/**
+ * Clears the cached Supabase client so the next `getSupabase()` call rebuilds it.
+ *
+ * Note: Any live Realtime subscriptions held by the old client will leak after
+ * reset. Task 4 intentionally does not clean those up — Task 5+ owns subscription
+ * lifecycle and should unsubscribe before calling this helper.
+ */
+export function resetSupabase(): void {
+  cachedClient = null;
+}
