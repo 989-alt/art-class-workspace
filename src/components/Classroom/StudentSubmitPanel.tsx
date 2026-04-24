@@ -17,9 +17,8 @@ const L = {
     uploading: '업로드 중...',
     submittedPending: '✅ 제출 완료! 선생님 검수 대기중',
     submittedApproved: '🌟 선생님이 승인했어요! 학급 전시장에 올라갑니다',
-    retake: '❌ 다시 제출',
-    approvedLocked: '승인된 작품은 다시 제출할 수 없어요.',
-    loadingState: '불러오는 중...',
+    retake: '🔄 다시 제출',
+    approvedLocked: '승인된 작품이에요. 다시 제출하면 새 사진이 올라갑니다.',
     errorTooBig: '사진이 너무 커요. 조금 더 작은 이미지를 골라주세요.',
     errorGeneric: '업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.',
     errorNotImage: '이미지 파일만 올려주세요.',
@@ -35,17 +34,14 @@ export default function StudentSubmitPanel({
     const configured = isSupabaseConfigured();
     const {
         submission,
-        isLoading,
         isUploading,
         error,
         submit,
-        remove,
     } = useStudentSubmission(configured ? sessionId : null, studentToken);
 
     const [localError, setLocalError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    // Graceful fallback: if Supabase is unreachable, don't render the panel at all.
     const handlePick = useCallback(() => {
         setLocalError(null);
         fileInputRef.current?.click();
@@ -79,16 +75,6 @@ export default function StudentSubmitPanel({
         [submit, nickname]
     );
 
-    const handleRetake = useCallback(async () => {
-        setLocalError(null);
-        try {
-            await remove();
-        } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            setLocalError(msg || L.errorGeneric);
-        }
-    }, [remove]);
-
     if (!configured) return null;
 
     return (
@@ -98,11 +84,7 @@ export default function StudentSubmitPanel({
                 <p className="submit-panel__help">{L.help}</p>
             </header>
 
-            {isLoading ? (
-                <div className="submit-panel__loading" role="status">
-                    {L.loadingState}
-                </div>
-            ) : submission ? (
+            {submission ? (
                 <div className="submit-panel__submitted">
                     <img
                         className="submit-panel__preview"
@@ -119,18 +101,17 @@ export default function StudentSubmitPanel({
                     >
                         {submission.approved ? L.submittedApproved : L.submittedPending}
                     </p>
-                    {submission.approved ? (
+                    {submission.approved && (
                         <p className="submit-panel__locked-hint">{L.approvedLocked}</p>
-                    ) : (
-                        <button
-                            type="button"
-                            className="submit-panel__retake"
-                            onClick={handleRetake}
-                            disabled={isUploading}
-                        >
-                            {L.retake}
-                        </button>
                     )}
+                    <button
+                        type="button"
+                        className="submit-panel__retake"
+                        onClick={handlePick}
+                        disabled={isUploading}
+                    >
+                        {isUploading ? L.uploading : L.retake}
+                    </button>
                 </div>
             ) : (
                 <div className="submit-panel__empty">

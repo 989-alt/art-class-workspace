@@ -110,28 +110,3 @@ export async function uploadSubmission(
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
     return { path, publicUrl: data.publicUrl };
 }
-
-/**
- * Best-effort removal of a previously uploaded Storage object. Failure is
- * non-fatal — the caller should still be able to re-upload.
- */
-export async function removeStorageObject(path: string): Promise<void> {
-    const supabase = getSupabase();
-    if (!supabase) return;
-    try {
-        await supabase.storage.from(BUCKET).remove([path]);
-    } catch {
-        // best-effort; ignore
-    }
-}
-
-/**
- * Derives the Storage object path from a public URL produced by
- * `getPublicUrl()`. Used when we only have the URL stored in the DB row.
- */
-export function storagePathFromPublicUrl(publicUrl: string): string | null {
-    const marker = `/object/public/${BUCKET}/`;
-    const idx = publicUrl.indexOf(marker);
-    if (idx < 0) return null;
-    return publicUrl.slice(idx + marker.length);
-}

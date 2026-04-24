@@ -37,7 +37,7 @@
 
 ## 2. SQL 마이그레이션 실행
 
-Supabase 대시보드 → **SQL Editor** 로 이동 후, 아래 6개 파일을 **순서대로** 복사·붙여넣기 해서 Run 하세요.
+Supabase 대시보드 → **SQL Editor** 로 이동 후, 아래 7개 파일을 **순서대로** 복사·붙여넣기 해서 Run 하세요.
 
 ```
 supabase/migrations/0001_classroom_sessions.sql
@@ -46,9 +46,12 @@ supabase/migrations/0003_session_submissions.sql
 supabase/migrations/0004_rls_policies.sql
 supabase/migrations/0005_cleanup_function.sql
 supabase/migrations/0006_submission_storage.sql
+supabase/migrations/0007_fix_submission_rls.sql
 ```
 
-`0006_submission_storage.sql` 은 Task 7 의 학생 제출/교사 검수 기능용 RLS 정책을 보정합니다. 0001~0005 를 먼저 돌린 뒤 마지막에 실행하세요.
+`0006_submission_storage.sql` 은 Task 7 의 학생 제출/교사 검수 기능용 RLS 정책을 보정합니다. 0001~0005 를 먼저 돌린 뒤 실행하세요.
+
+`0007_fix_submission_rls.sql` 은 0006 의 과도하게 열린 정책(모든 학생 제출 행 읽기 허용 + 임의 pending 행 삭제 허용)을 보안 강화 버전으로 교체합니다. 반드시 0006 뒤에 실행하세요.
 
 각 파일이 에러 없이 `Success. No rows returned` 로 끝나는지 확인합니다.
 
@@ -159,6 +162,7 @@ await (await import('/src/lib/supabaseClient.ts')).getSupabase()
 - 데이터 접근 제어는 `0004_rls_policies.sql` 의 Row Level Security 정책이 담당합니다.
 - 교사만 자신의 세션을 수정/삭제할 수 있고, 학생 토큰(`student_token`)은 브라우저 세션 단위로 발급돼 다른 학생 투표를 덮어쓸 수 없습니다.
 - 투표 기록(`session_votes`)은 교사만 조회할 수 있습니다. 학생 본인 투표값은 브라우저 로컬 상태에만 보관되며, 서버에서 다시 읽어오지 않습니다.
+- 학생 제출(`session_submissions`)도 같은 원칙입니다. 0007 마이그레이션 적용 후 anonymous 클라이언트는 미승인 행을 읽거나 삭제할 수 없으며, 본인 제출 상태는 브라우저 로컬 상태로만 유지됩니다. 페이지 새로고침 시 "사진 선택" 화면으로 돌아가며, 다시 업로드하면 새로운 pending 행이 생성됩니다 (교사는 최신 제출만 승인).
 - 민감 키(`service_role`, DB password)는 절대 `.env.local` 이외에 저장하지 마세요.
 
 ---
