@@ -1,0 +1,21 @@
+-- v3 LMS Storage setup (perform manually in Supabase dashboard > Storage):
+--
+-- 1. Bucket `classroom-assets`
+--    - Public: yes
+--    - File size limit: 5 MB
+--    - Allowed MIME: image/png, image/jpeg, image/svg+xml
+--    - Purpose: teacher-uploaded base images for assignments
+--
+-- 2. Bucket `classroom-submissions`
+--    - Public: yes
+--    - File size limit: 5 MB
+--    - Allowed MIME: image/png, image/jpeg
+--    - Purpose: student-submitted completed artwork photos
+--
+-- Anonymous uploads for `classroom-submissions` are permitted (students
+-- submit without auth). For `classroom-assets`, uploads should be
+-- restricted to authenticated teachers — this is enforced at the
+-- application layer (only the teacher's browser session holds a live
+-- access token that can PUT into storage), plus bucket RLS if enabled.
+--
+-- Intentionally no SQL statements in this file.

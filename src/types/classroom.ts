@@ -1,3 +1,28 @@
-// v3: 이 파일은 v3-T1 에서 Classroom/Assignment/AssignmentSubmission 타입으로
-// 재작성됩니다. 현 시점에는 의도적으로 빈 export.
-export {};
+// v3 LMS types. See supabase/migrations/0001~0003.
+
+export interface Classroom {
+  id: string;
+  teacher_id: string;
+  name: string;
+  code: string;          // 6-char, fixed for lifetime
+  created_at: string;
+}
+
+export interface Assignment {
+  id: string;
+  classroom_id: string;
+  title: string;
+  image_url: string;     // Supabase Storage public URL (classroom-assets)
+  prompt: string | null;
+  created_at: string;
+}
+
+export interface AssignmentSubmission {
+  id: string;
+  assignment_id: string;
+  student_token: string;
+  nickname: string | null;
+  image_url: string;     // Supabase Storage public URL (classroom-submissions)
+  approved: boolean;
+  created_at: string;
+}
