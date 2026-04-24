@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { isSupabaseConfigured } from '../../lib/supabaseClient';
 import { isValidSessionCode } from '../../lib/sessionCode';
 import { clearStudentToken } from '../../lib/studentToken';
 import { useStudentSession } from '../../hooks/useStudentSession';
 import { CURRICULUM_PRESETS } from '../../data/curriculumPresets';
 import './StudentVoteView.css';
+
+// Lazy-mount to keep initial render minimal and defer canvas/image-upload code
+// until the student reaches the completion state.
+const StudentSubmitPanel = lazy(() => import('./StudentSubmitPanel'));
 
 interface StudentVoteViewProps {
     sessionCode: string;
@@ -79,6 +83,7 @@ export default function StudentVoteView({ sessionCode }: StudentVoteViewProps) {
     const {
         session,
         status,
+        studentToken,
         loadError,
         isSubmitting,
         hasSubmitted,
@@ -252,6 +257,12 @@ export default function StudentVoteView({ sessionCode }: StudentVoteViewProps) {
                                 {L.restart}
                             </button>
                         </div>
+                        <Suspense fallback={null}>
+                            <StudentSubmitPanel
+                                sessionId={session.id}
+                                studentToken={studentToken}
+                            />
+                        </Suspense>
                     </section>
                 </div>
             </div>

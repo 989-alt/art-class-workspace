@@ -37,7 +37,7 @@
 
 ## 2. SQL 마이그레이션 실행
 
-Supabase 대시보드 → **SQL Editor** 로 이동 후, 아래 5개 파일을 **순서대로** 복사·붙여넣기 해서 Run 하세요.
+Supabase 대시보드 → **SQL Editor** 로 이동 후, 아래 6개 파일을 **순서대로** 복사·붙여넣기 해서 Run 하세요.
 
 ```
 supabase/migrations/0001_classroom_sessions.sql
@@ -45,7 +45,10 @@ supabase/migrations/0002_session_votes.sql
 supabase/migrations/0003_session_submissions.sql
 supabase/migrations/0004_rls_policies.sql
 supabase/migrations/0005_cleanup_function.sql
+supabase/migrations/0006_submission_storage.sql
 ```
+
+`0006_submission_storage.sql` 은 Task 7 의 학생 제출/교사 검수 기능용 RLS 정책을 보정합니다. 0001~0005 를 먼저 돌린 뒤 마지막에 실행하세요.
 
 각 파일이 에러 없이 `Success. No rows returned` 로 끝나는지 확인합니다.
 
@@ -87,14 +90,14 @@ select * from cron.job;
 
 ## 4. Storage 버킷 생성 (Task 7용)
 
-학생 제출 작품 이미지 저장소입니다. 지금 만들어 두면 이후 개발이 매끄럽습니다.
+학생 제출 작품 이미지 저장소입니다. Task 7 의 학생 제출 기능이 이 버킷을 사용합니다.
 
 1. 대시보드 → **Storage** → **New bucket**
-2. Name: `classroom-submissions`
+2. Name: **`classroom-submissions`** (정확히 이 이름)
 3. **Public bucket** 체크 (교실 전시용 — 외부 공유 불가한 URL을 원한다면 Private 후 Signed URL 방식 권장하지만, MVP 단계에서는 Public 이 단순함)
-4. File size limit: 5 MB 정도로 제한
+4. **File size limit: 5 MB** 로 제한 (클라이언트에서도 1600px 로 리사이즈 후 업로드합니다)
 
-Storage RLS 정책은 Task 7에서 추가합니다.
+버킷 이름이 틀리면 학생 제출 시 `bucket not found` 오류가 납니다. 이름은 꼭 `classroom-submissions` 로 맞춰주세요. RLS 정책은 `0006_submission_storage.sql` 에 포함돼 있습니다.
 
 ---
 

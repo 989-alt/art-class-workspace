@@ -11,6 +11,7 @@ import { generateImage, SafetyFilterError } from '../../services/geminiService';
 import { calculateAspectRatio } from '../../utils/aspectRatio';
 import VoteOptionsEditor, { FIXED_PALETTES, FIXED_DETAILS } from './VoteOptionsEditor';
 import VoteDashboard from './VoteDashboard';
+import TeacherReviewPanel from './TeacherReviewPanel';
 import './SessionHost.css';
 
 interface SessionHostProps {
@@ -380,6 +381,7 @@ export default function SessionHost({
                             {L.finishBtn}
                         </button>
                     </div>
+                    <TeacherReviewPanel sessionId={session.id} />
                 </section>
             ) : (
                 <section className="session-host__grid">
