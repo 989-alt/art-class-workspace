@@ -58,14 +58,15 @@ npm run preview   # 빌드 결과 로컬 프리뷰
 
 필요한 것:
 
+프로젝트 루트에 `.env.local` 파일을 새로 만들고 아래 두 값을 채워 넣으세요:
+
 ```bash
-cp .env.example .env        # (없으면 수동 작성)
-# .env
+# .env.local  ← git에 올라가지 않는 로컬 파일
 VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbG...
 ```
 
-`supabase/migrations/0001_classroom_schema.sql` ~ `0007_class_gallery_read.sql`을 SQL Editor에서 순서대로 실행하고, Storage에 `session-submissions` 퍼블릭 버킷을 만드세요. 상세 단계는 `SUPABASE_SETUP.md` 참고.
+`supabase/migrations/0001_classroom_sessions.sql` ~ `0007_fix_submission_rls.sql`을 SQL Editor에서 순서대로 실행하고, Storage에 `classroom-submissions` 퍼블릭 버킷을 만드세요. 상세 단계는 `SUPABASE_SETUP.md` 참고.
 
 ---
 

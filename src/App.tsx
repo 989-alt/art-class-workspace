@@ -98,17 +98,7 @@ function ClassroomView({
 // region is enough for screen readers and visually unobtrusive.
 function LazyFallback({ message }: { message: string }) {
   return (
-    <div
-      className="app-lazy-fallback"
-      role="status"
-      aria-live="polite"
-      style={{
-        padding: '48px 24px',
-        textAlign: 'center',
-        color: 'var(--text-secondary, #666)',
-        fontSize: '14px',
-      }}
-    >
+    <div className="app-lazy-fallback" role="status" aria-live="polite">
       {message}
     </div>
   );

@@ -4,6 +4,13 @@
   z-index: 1;
 }
 
+.app-lazy-fallback {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-secondary, #666);
+  font-size: 14px;
+}
+
 /* ── Workspace Layout ── */
 .workspace {
   display: grid;

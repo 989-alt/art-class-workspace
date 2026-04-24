@@ -67,9 +67,12 @@ export default function Gallery({
             <ul className="gallery__grid">
                 {items.map((item) => {
                     const isSelected = selectedIds.has(item.id);
+                    const topicText = item.config.topic?.trim();
                     const label = item.config.mode === 'mandala'
                         ? '만다라 도안'
-                        : `${item.config.topic.slice(0, 20)} 도안`;
+                        : topicText
+                            ? `${topicText.slice(0, 20)} 도안`
+                            : '생성된 도안';
                     return (
                         <li
                             key={item.id}
