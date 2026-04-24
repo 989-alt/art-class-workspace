@@ -15,8 +15,6 @@ interface UseGenerationReturn {
     toast: ToastMessage | null;
     setToast: (toast: ToastMessage | null) => void;
     clearToast: () => void;
-    /** Most recent prompt sent to Gemini (used for certificate metadata). */
-    lastPrompt: string;
 }
 
 let toastCounter = 0;
@@ -31,7 +29,6 @@ export function useGeneration(): UseGenerationReturn {
     const [isLoading, setIsLoading] = useState(false);
     const [generationProgress, setGenerationProgress] = useState<{ current: number; total: number } | null>(null);
     const [toast, setToastState] = useState<ToastMessage | null>(null);
-    const [lastPrompt, setLastPrompt] = useState<string>('');
 
     const showToast = useCallback((type: ToastMessage['type'], message: string) => {
         setToastState({ id: `toast-${++toastCounter}`, type, message });
@@ -61,7 +58,7 @@ export function useGeneration(): UseGenerationReturn {
 
             // Resolve prompt. For curriculum mode with a presetId, require the preset to exist —
             // otherwise surface an error rather than silently falling back to a Korean topic.
-            let prompt: string;
+            let currentPrompt: string;
             if (config.mode === 'curriculum' && config.presetId) {
                 const preset = CURRICULUM_PRESETS.find((p) => p.id === config.presetId);
                 if (!preset) {
@@ -70,7 +67,7 @@ export function useGeneration(): UseGenerationReturn {
                     setIsLoading(false);
                     return;
                 }
-                prompt = buildPromptFromPreset(
+                currentPrompt = buildPromptFromPreset(
                     preset,
                     config.selectedTopic ?? null,
                     config.difficulty,
@@ -80,7 +77,7 @@ export function useGeneration(): UseGenerationReturn {
                     config.gridM
                 );
             } else {
-                prompt = buildPrompt(
+                currentPrompt = buildPrompt(
                     config.mode,
                     config.topic,
                     config.mandalaPreset,
@@ -91,10 +88,6 @@ export function useGeneration(): UseGenerationReturn {
                     config.gridM
                 );
             }
-
-            // Remember the prompt for downstream provenance metadata
-            // (copyright certificate page).
-            setLastPrompt(prompt);
 
             // Calculate aspect ratio for the image generation
             const aspectRatio = calculateAspectRatio(
@@ -110,12 +103,13 @@ export function useGeneration(): UseGenerationReturn {
             for (let i = 0; i < count; i++) {
                 setGenerationProgress({ current: i + 1, total: count });
                 try {
-                    const imageData = await generateImage(apiKey, prompt, { aspectRatio });
+                    const imageData = await generateImage(apiKey, currentPrompt, { aspectRatio });
                     const item: GalleryItem = {
                         id: generateId(),
                         image: imageData,
                         config,
                         createdAt: Date.now(),
+                        prompt: currentPrompt,
                     };
                     onImageGenerated(item);
                     successCount++;
@@ -148,7 +142,6 @@ export function useGeneration(): UseGenerationReturn {
             clearToast();
             try {
                 const editPrompt = buildEditPrompt(editType);
-                setLastPrompt(editPrompt);
                 const editedData = await editImage(apiKey, currentImage, editPrompt);
                 setCurrentImage(editedData);
                 showToast('success', EDIT_SUCCESS_MESSAGE);
@@ -175,7 +168,6 @@ export function useGeneration(): UseGenerationReturn {
         toast,
         setToast,
         clearToast,
-        lastPrompt,
     };
 }
 

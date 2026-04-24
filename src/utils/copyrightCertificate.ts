@@ -65,9 +65,23 @@ export async function buildCertificateMetadata(
     const promptExcerpt = truncate(args.prompt, PROMPT_EXCERPT_LIMIT);
     const createdAtIso = args.createdAt.toISOString();
     const hashInput = `${args.imageBase64}|${promptExcerpt}|${createdAtIso}`;
-    const fileHash = await sha256Hex(hashInput);
-    const base = args.verifyBaseUrl ?? DEFAULT_VERIFY_BASE;
-    const verifyUrl = `${base}?h=${fileHash.slice(0, 16)}`;
+
+    // crypto.subtle is only available in secure contexts (HTTPS / localhost).
+    // In insecure contexts (http://LAN-IP in a classroom), fall back to a
+    // non-cryptographic fingerprint so PDF export still succeeds. The
+    // verification URL is marked 'unavailable' in that path because the
+    // backend can't match a non-crypto fingerprint.
+    let fileHash: string;
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+        fileHash = await sha256Hex(hashInput);
+    } else {
+        fileHash = fallbackFingerprint(hashInput);
+    }
+
+    const verifyUrl = fileHash.endsWith('-fallback')
+        ? 'unavailable'
+        : `${args.verifyBaseUrl ?? DEFAULT_VERIFY_BASE}?h=${fileHash.slice(0, 16)}`;
+
     return {
         createdAt: args.createdAt,
         unitLabel: args.unitLabel ?? null,
@@ -87,6 +101,20 @@ async function sha256Hex(input: string): Promise<string> {
     return Array.from(new Uint8Array(buf))
         .map((b) => b.toString(16).padStart(2, '0'))
         .join('');
+}
+
+/**
+ * Non-cryptographic djb2-style hash, used only when crypto.subtle is
+ * unavailable. Returns a 16-hex-char digest suffixed with '-fallback' so
+ * the verify-URL path can detect it and avoid constructing a link the
+ * backend won't resolve.
+ */
+function fallbackFingerprint(input: string): string {
+    let h = 5381;
+    for (let i = 0; i < input.length; i++) {
+        h = ((h << 5) + h + input.charCodeAt(i)) | 0;
+    }
+    return (h >>> 0).toString(16).padStart(16, '0') + '-fallback';
 }
 
 function truncate(input: string, max: number): string {

@@ -42,7 +42,7 @@ const BOOST_ERROR_MESSAGE = '선 굵기 보정 중 오류가 발생했습니다.
 
 export default function App() {
   const { apiKey, hasApiKey, isLoaded, setApiKey, clearApiKey } = useApiKey();
-  const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, setToast, clearToast, lastPrompt } = useGeneration();
+  const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, setToast, clearToast } = useGeneration();
   const { historyCount, maxDepth, canUndo, push, undo, clear } = useHistory();
   const [showKeySetup, setShowKeySetup] = useState(false);
   const [gridN, setGridN] = useState(1);
@@ -304,7 +304,8 @@ export default function App() {
               gridM={gridM}
               paperSize={paperSize}
               orientation={orientation}
-              lastPrompt={lastPrompt}
+              itemPrompt={activeItem?.prompt}
+              itemCreatedAt={activeItem?.createdAt}
               unitLabel={deriveUnitLabel(activeItem)}
             />
           )}

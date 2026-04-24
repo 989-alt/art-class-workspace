@@ -4,7 +4,7 @@ import { imageToSvg, downloadSvg } from '../../utils/vectorizer';
 import { exportToPdf } from '../../utils/pdfExporter';
 import { downloadResizedPng, resizeImageToAspectRatio } from '../../utils/imageResizer';
 import { buildCertificateMetadata } from '../../utils/copyrightCertificate';
-import { getTeacherName, setTeacherName } from '../../utils/teacherProfile';
+import { getTeacherName, setTeacherName, DEFAULT_TEACHER_NAME } from '../../utils/teacherProfile';
 import './ExportPanel.css';
 
 interface ExportPanelProps {
@@ -13,8 +13,14 @@ interface ExportPanelProps {
     gridM: number;
     paperSize: PaperSize;
     orientation: Orientation;
-    /** Latest prompt used to generate/edit the active image. */
-    lastPrompt?: string;
+    /**
+     * Original prompt from the active GalleryItem. Each gallery item owns
+     * its generation prompt so switching selection in the gallery doesn't
+     * leak the most-recent prompt into an older item's certificate.
+     */
+    itemPrompt?: string;
+    /** Original creation timestamp of the active GalleryItem (ms since epoch). */
+    itemCreatedAt?: number;
     /** Curriculum unit label (e.g. "3-1 미술 「우리 동네의 모습」") when applicable. */
     unitLabel?: string | null;
 }
@@ -44,7 +50,8 @@ export default function ExportPanel({
     gridM,
     paperSize,
     orientation,
-    lastPrompt,
+    itemPrompt,
+    itemCreatedAt,
     unitLabel,
 }: ExportPanelProps) {
     const [isExporting, setIsExporting] = useState<'png' | 'svg' | 'pdf' | null>(null);
@@ -94,14 +101,25 @@ export default function ExportPanel({
 
             let certificateMeta = undefined;
             if (certificate) {
+                // Certificate boundary sanitization:
+                // - Korean full-width brackets 「」 and middle-dot · render as
+                //   tofu on the English-only certificate page, so substitute
+                //   ASCII equivalents before handing off.
+                // - When the teacher name is still the UI-friendly default
+                //   (Korean '교사'), render an em-dash instead of tofu.
+                const asciiUnitLabel =
+                    unitLabel?.replace(/「/g, '"').replace(/」/g, '"').replace(/·/g, '-') ?? null;
+                const storedTeacher = getTeacherName();
+                const certTeacher = storedTeacher === DEFAULT_TEACHER_NAME ? '—' : storedTeacher;
+
                 certificateMeta = await buildCertificateMetadata({
-                    createdAt: new Date(),
-                    unitLabel: unitLabel ?? null,
-                    prompt: lastPrompt ?? '',
+                    createdAt: itemCreatedAt ? new Date(itemCreatedAt) : new Date(),
+                    unitLabel: asciiUnitLabel,
+                    prompt: itemPrompt ?? '(unknown)',
                     imageBase64: resizedImage,
                     aiModel: AI_MODEL_LABEL,
                     toolName: TOOL_NAME,
-                    teacherName: getTeacherName(),
+                    teacherName: certTeacher,
                     license: LICENSE,
                 });
             }

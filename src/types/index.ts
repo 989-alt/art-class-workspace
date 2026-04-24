@@ -82,4 +82,11 @@ export interface GalleryItem {
   image: string;
   config: GenerationConfig;
   createdAt: number;
+  /**
+   * Original generation prompt sent to Gemini. Used by the copyright
+   * certificate so that selecting an older gallery item reproduces the
+   * exact prompt recorded on that item (not the most-recent prompt).
+   * Never modified by subsequent edits.
+   */
+  prompt: string;
 }
