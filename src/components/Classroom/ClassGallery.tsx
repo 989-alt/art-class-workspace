@@ -57,6 +57,18 @@ export default function ClassGallery({
     const [isExporting, setIsExporting] = useState(false);
     const [exportError, setExportError] = useState<string | null>(null);
 
+    const tvBtnRef = useRef<HTMLButtonElement | null>(null);
+    const prevTvOpenRef = useRef(tvOpen);
+    useEffect(() => {
+        // Return focus to the TV launch button after the slideshow closes
+        // (WCAG dialog pattern). Run after React unmounts the overlay so the
+        // focus move isn't immediately stolen back.
+        if (prevTvOpenRef.current && !tvOpen) {
+            tvBtnRef.current?.focus();
+        }
+        prevTvOpenRef.current = tvOpen;
+    }, [tvOpen]);
+
     const handleOpenTv = useCallback(() => {
         setTvOpen(true);
     }, []);
@@ -103,6 +115,7 @@ export default function ClassGallery({
                 <div className="class-gallery__toolbar">
                     <span className="class-gallery__counter">{L.counter(approved.length)}</span>
                     <button
+                        ref={tvBtnRef}
                         type="button"
                         className="class-gallery__tv-btn"
                         onClick={handleOpenTv}
@@ -194,7 +207,9 @@ function GallerySlideshow({ submissions, onClose }: GallerySlideshowProps) {
         setIndex((i) => (total === 0 ? 0 : (i - 1 + total) % total));
     }, [total]);
 
-    // Try to request browser fullscreen; fall back silently to fixed overlay.
+    // Request browser fullscreen (fall back silently to fixed overlay) and
+    // bridge an external fullscreen exit (browser-level Esc) into closing the
+    // dialog so the overlay doesn't linger in windowed mode.
     useEffect(() => {
         const el = containerRef.current;
         if (!el) return;
@@ -208,7 +223,19 @@ function GallerySlideshow({ submissions, onClose }: GallerySlideshowProps) {
         }
         // Focus the close button for keyboard accessibility.
         closeBtnRef.current?.focus();
+
+        const onFsChange = () => {
+            const anyDoc = document as Document & { webkitFullscreenElement?: Element | null };
+            if (!document.fullscreenElement && !anyDoc.webkitFullscreenElement) {
+                onClose();
+            }
+        };
+        document.addEventListener('fullscreenchange', onFsChange);
+        document.addEventListener('webkitfullscreenchange', onFsChange as EventListener);
+
         return () => {
+            document.removeEventListener('fullscreenchange', onFsChange);
+            document.removeEventListener('webkitfullscreenchange', onFsChange as EventListener);
             const anyDoc = document as Document & { webkitExitFullscreen?: () => Promise<void> };
             if (document.fullscreenElement) {
                 document.exitFullscreen?.().catch(() => {});
@@ -216,7 +243,7 @@ function GallerySlideshow({ submissions, onClose }: GallerySlideshowProps) {
                 anyDoc.webkitExitFullscreen().catch(() => {});
             }
         };
-    }, []);
+    }, [onClose]);
 
     // Auto-advance timer. Skip when there's 0 or 1 submission.
     useEffect(() => {

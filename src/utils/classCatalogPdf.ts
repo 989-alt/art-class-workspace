@@ -143,6 +143,12 @@ async function loadImageTile(url: string): Promise<LoadedTile | null> {
 
 function loadCrossOriginImage(url: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
+        // Guard falsy URLs: setting `img.src = ''` doesn't fire `onerror`
+        // reliably across browsers and leaves the promise pending forever.
+        if (!url) {
+            reject(new Error('empty url'));
+            return;
+        }
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => resolve(img);
