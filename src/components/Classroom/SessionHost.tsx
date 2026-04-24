@@ -47,6 +47,8 @@ const L = {
     finishBtn: '갤러리에서 보기',
     confirmEnd: '세션을 종료하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
     statusError: '오류',
+    qrAltPrefix: '세션 코드',
+    qrAltSuffix: 'QR 코드',
 };
 
 function statusLabel(status: ClassroomSession['status']): string {
@@ -64,9 +66,8 @@ function statusLabel(status: ClassroomSession['status']): string {
     }
 }
 
-let sessionGalleryIdCounter = 0;
 function generateGalleryId(): string {
-    return `session-${Date.now()}-${++sessionGalleryIdCounter}`;
+    return `session-${crypto.randomUUID()}`;
 }
 
 export default function SessionHost({
@@ -89,6 +90,7 @@ export default function SessionHost({
         createSession,
         updateVoteOptions,
         closeSession,
+        reopenSession,
         setFinalImage,
         clearSession,
     } = useClassroomSession();
@@ -184,8 +186,10 @@ export default function SessionHost({
     const handleCloseAndGenerate = useCallback(async () => {
         if (!session || !preset || aggregation.total === 0) return;
         setIsGenerating(true);
+        let closed = false;
         try {
             await closeSession(session.id);
+            closed = true;
             const composedPrompt = composeVotedPrompt(preset, aggregation);
             const aspectRatio = calculateAspectRatio(
                 config.gridN,
@@ -193,28 +197,43 @@ export default function SessionHost({
                 config.orientation,
                 config.paperSize
             );
-            const imageData = await generateImage(apiKey, composedPrompt, { aspectRatio });
-            setFinalImageLocal(imageData);
-            setFinalPromptLocal(composedPrompt);
+            try {
+                const imageData = await generateImage(apiKey, composedPrompt, { aspectRatio });
+                setFinalImageLocal(imageData);
+                setFinalPromptLocal(composedPrompt);
 
-            // Persist to Supabase (final_image_url stores the data URL / later
-            // Task 7 swaps to Storage URLs).
-            await setFinalImage(session.id, composedPrompt, imageData);
+                // Persist to Supabase (final_image_url stores the data URL / later
+                // Task 7 swaps to Storage URLs).
+                await setFinalImage(session.id, composedPrompt, imageData);
 
-            // Push to gallery so the teacher can edit/print immediately.
-            const item: GalleryItem = {
-                id: generateGalleryId(),
-                image: imageData,
-                config,
-                createdAt: Date.now(),
-                prompt: composedPrompt,
-            };
-            onComplete(item);
-            onToast({
-                id: `session-complete-${Date.now()}`,
-                type: 'success',
-                message: '✨ 학급 공동 도안이 완성되었습니다!',
-            });
+                // Push to gallery so the teacher can edit/print immediately.
+                const item: GalleryItem = {
+                    id: generateGalleryId(),
+                    image: imageData,
+                    config,
+                    createdAt: Date.now(),
+                    prompt: composedPrompt,
+                };
+                onComplete(item);
+                onToast({
+                    id: `session-complete-${Date.now()}`,
+                    type: 'success',
+                    message: '✨ 학급 공동 도안이 완성되었습니다!',
+                });
+            } catch (innerErr) {
+                // Rollback: image generation failed, but we already flipped
+                // status to 'generating'. Return session to 'voting' so the
+                // teacher can retry without being stuck.
+                if (closed) {
+                    try {
+                        await reopenSession(session.id);
+                    } catch {
+                        // Ignore rollback failure; the generation error below
+                        // is more actionable for the teacher.
+                    }
+                }
+                throw innerErr;
+            }
         } catch (err) {
             let msg = L.errorGenerate;
             if (err instanceof SafetyFilterError) msg = L.errorSafety;
@@ -230,6 +249,7 @@ export default function SessionHost({
         config,
         apiKey,
         closeSession,
+        reopenSession,
         setFinalImage,
         onComplete,
         onToast,
@@ -247,7 +267,7 @@ export default function SessionHost({
         return (
             <div className="session-host">
                 <div className="session-host__card">
-                    <p>프리셋을 찾을 수 없습니다.</p>
+                    <p>{'프리셋을 찾을 수 없습니다.'}</p>
                     <button className="session-host__exit" onClick={onExit}>
                         {L.back}
                     </button>
@@ -319,7 +339,13 @@ export default function SessionHost({
             <section className="session-host__code-row">
                 <div className="session-host__code-block">
                     <div className="session-host__code-label">{L.sessionCode}</div>
-                    <div className="session-host__code">{session.code}</div>
+                    <div
+                        className="session-host__code"
+                        aria-live="polite"
+                        aria-label={`${L.qrAltPrefix} ${session.code}`}
+                    >
+                        {session.code}
+                    </div>
                     <div className="session-host__url">{L.studentUrl}: {studentUrl}</div>
                     <p className="session-host__code-hint">{L.scanHint}</p>
                 </div>
@@ -328,7 +354,7 @@ export default function SessionHost({
                         <img
                             className="session-host__qr"
                             src={qrDataUrl}
-                            alt="session QR"
+                            alt={`${L.qrAltPrefix} ${session.code} ${L.qrAltSuffix}`}
                             width={200}
                             height={200}
                         />

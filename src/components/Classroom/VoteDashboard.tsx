@@ -16,6 +16,8 @@ const L = {
     details: '디테일 선택',
     top: '최다 선택',
     noVotes: '아직 투표가 없습니다.',
+    votesSuffix: '표',
+    percentSuffix: '퍼센트',
 };
 
 function keywordFontSize(count: number): number {
@@ -34,9 +36,14 @@ function BarRow({
     total: number;
     isTop: boolean;
 }) {
-    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+    const percentage = total > 0 ? (count / total) * 100 : 0;
+    const pct = Math.round(percentage);
     return (
-        <div className={`vote-dashboard__bar${isTop ? ' vote-dashboard__bar--top' : ''}`}>
+        <div
+            className={`vote-dashboard__bar${isTop ? ' vote-dashboard__bar--top' : ''}`}
+            role="img"
+            aria-label={`${label}: ${count}${L.votesSuffix}, ${pct}${L.percentSuffix}`}
+        >
             <div className="vote-dashboard__bar-header">
                 <span className="vote-dashboard__bar-label">
                     {label}
@@ -108,6 +115,7 @@ export default function VoteDashboard({
                                 className={`vote-dashboard__keyword${value === topKeyword ? ' vote-dashboard__keyword--top' : ''}`}
                                 style={{ fontSize: `${keywordFontSize(count)}px` }}
                                 title={`${value}: ${count}`}
+                                aria-label={`${value} ${count}${L.votesSuffix}`}
                             >
                                 {value}
                                 <small className="vote-dashboard__keyword-count"> {count}</small>

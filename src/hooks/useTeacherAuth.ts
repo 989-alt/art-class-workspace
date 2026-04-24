@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { getSupabase, resetSupabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import { getSupabase, isSupabaseConfigured } from '../lib/supabaseClient';
 
 interface UseTeacherAuthReturn {
     user: User | null;
@@ -67,12 +67,14 @@ export function useTeacherAuth(): UseTeacherAuthReturn {
         if (error) throw error;
     }, []);
 
+    // Note: we intentionally do not call resetSupabase() here.
+    // Active subscriptions in other hooks need the cached client to stay
+    // alive long enough to clean themselves up on unmount.
     const signOut = useCallback(async () => {
         const supabase = getSupabase();
         if (!supabase) return;
         await supabase.auth.signOut();
         setUser(null);
-        resetSupabase();
     }, []);
 
     return {

@@ -22,6 +22,7 @@ interface UseClassroomSessionReturn {
     ) => Promise<ClassroomSession>;
     updateVoteOptions: (sessionId: string, voteOptions: VoteOptions) => Promise<void>;
     closeSession: (sessionId: string) => Promise<void>;
+    reopenSession: (sessionId: string) => Promise<void>;
     setFinalImage: (
         sessionId: string,
         finalPrompt: string,
@@ -72,15 +73,39 @@ export function useClassroomSession(): UseClassroomSessionReturn {
         const supabase = getSupabase();
         if (!supabase || !session) return;
         const sessionId = session.id;
+        let cancelled = false;
 
         // Load any existing votes first (covers late subscribers).
+        // Merge-by-id so Realtime INSERTs arriving before preload resolves
+        // are not overwritten by the server snapshot.
         supabase
             .from('session_votes')
             .select('*')
             .eq('session_id', sessionId)
-            .then(({ data }) => {
-                if (Array.isArray(data)) setVotes(data as SessionVote[]);
-            });
+            .then(
+                ({ data, error: loadError }) => {
+                    if (cancelled) return;
+                    if (loadError) {
+                        setError(loadError.message || '투표 초기 로드 실패');
+                        return;
+                    }
+                    if (Array.isArray(data)) {
+                        setVotes((prev) => {
+                            const seen = new Set(prev.map((v) => v.id));
+                            const merged = [...prev];
+                            for (const row of data as SessionVote[]) {
+                                if (!seen.has(row.id)) merged.push(row);
+                            }
+                            return merged;
+                        });
+                    }
+                },
+                (err: unknown) => {
+                    if (cancelled) return;
+                    const msg = err instanceof Error ? err.message : String(err);
+                    setError(msg || '투표 초기 로드 실패');
+                }
+            );
 
         const channel = supabase
             .channel(`session-${sessionId}`)
@@ -118,6 +143,7 @@ export function useClassroomSession(): UseClassroomSessionReturn {
         channelRef.current = channel;
 
         return () => {
+            cancelled = true;
             channel.unsubscribe();
             supabase.removeChannel(channel);
             channelRef.current = null;
@@ -211,6 +237,22 @@ export function useClassroomSession(): UseClassroomSessionReturn {
         if (data) setSession(data as ClassroomSession);
     }, []);
 
+    // Rollback helper: used when image generation fails after closeSession()
+    // so the session returns to 'voting' instead of getting stuck in
+    // 'generating' forever.
+    const reopenSession = useCallback(async (sessionId: string) => {
+        const supabase = getSupabase();
+        if (!supabase) throw new Error(MISCONFIGURED_ERROR);
+        const { data, error: updateError } = await supabase
+            .from('classroom_sessions')
+            .update({ status: 'voting' })
+            .eq('id', sessionId)
+            .select()
+            .single();
+        if (updateError) throw updateError;
+        if (data) setSession(data as ClassroomSession);
+    }, []);
+
     const setFinalImage = useCallback(
         async (sessionId: string, finalPrompt: string, finalImageUrl: string) => {
             const supabase = getSupabase();
@@ -246,6 +288,7 @@ export function useClassroomSession(): UseClassroomSessionReturn {
         createSession,
         updateVoteOptions,
         closeSession,
+        reopenSession,
         setFinalImage,
         clearSession,
     };
