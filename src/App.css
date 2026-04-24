@@ -15,6 +15,13 @@
   min-height: calc(100vh - 72px);
 }
 
+.workspace--classroom {
+  display: block;
+  grid-template-columns: none;
+  padding: 24px 32px;
+  max-width: 1400px;
+}
+
 .workspace__sidebar {
   display: flex;
   flex-direction: column;

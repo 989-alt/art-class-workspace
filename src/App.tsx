@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useApiKey } from './hooks/useApiKey';
 import { useGeneration } from './hooks/useGeneration';
 import { useHistory } from './hooks/useHistory';
+import { useTeacherAuth } from './hooks/useTeacherAuth';
 import { exportToZip } from './utils/zipExporter';
 import { applyLineWeightBoost } from './utils/lineWeightBoost';
 import { CURRICULUM_PRESETS } from './data/curriculumPresets';
@@ -17,10 +18,12 @@ import QuickEditBar from './components/Canvas/QuickEditBar';
 import HistoryStack from './components/History/HistoryStack';
 import ExportPanel from './components/Export/ExportPanel';
 import Gallery from './components/Gallery/Gallery';
+import TeacherAuthGate from './components/Classroom/TeacherAuthGate';
+import SessionHost from './components/Classroom/SessionHost';
 
 import './App.css';
 
-type ViewMode = 'generator' | 'gallery' | 'detail';
+type ViewMode = 'generator' | 'gallery' | 'detail' | 'classroom';
 
 // Derive the curriculum unit label for the copyright certificate.
 // Returns null when the active item wasn't generated from a curriculum preset.
@@ -40,6 +43,34 @@ const BOOST_ALREADY_MESSAGE = '이미 적용됨';
 // "선 굵기 보정 중 오류가 발생했습니다."
 const BOOST_ERROR_MESSAGE = '선 굵기 보정 중 오류가 발생했습니다.';
 
+// Thin adapter component so we can read `user` inside the authed subtree.
+function ClassroomView({
+  config,
+  apiKey,
+  onToast,
+  onComplete,
+  onExit,
+}: {
+  config: GenerationConfig;
+  apiKey: string;
+  onToast: React.ComponentProps<typeof SessionHost>['onToast'];
+  onComplete: React.ComponentProps<typeof SessionHost>['onComplete'];
+  onExit: () => void;
+}) {
+  const { user } = useTeacherAuth();
+  if (!user) return null;
+  return (
+    <SessionHost
+      config={config}
+      apiKey={apiKey}
+      user={user}
+      onToast={onToast}
+      onComplete={onComplete}
+      onExit={onExit}
+    />
+  );
+}
+
 export default function App() {
   const { apiKey, hasApiKey, isLoaded, setApiKey, clearApiKey } = useApiKey();
   const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, setToast, clearToast } = useGeneration();
@@ -55,6 +86,9 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>('generator');
   const [activeItem, setActiveItem] = useState<GalleryItem | null>(null);
+
+  // Classroom mode
+  const [classroomConfig, setClassroomConfig] = useState<GenerationConfig | null>(null);
 
   // Line-boost applied flags — per active item id. Prevents stacking the
   // dilation effect when the teacher clicks "적용" multiple times.
@@ -92,6 +126,30 @@ export default function App() {
     },
     [apiKey, generate, clear, setCurrentImage]
   );
+
+  const handleEnterClassroom = useCallback((config: GenerationConfig) => {
+    setClassroomConfig(config);
+    setGridN(config.gridN);
+    setGridM(config.gridM);
+    setPaperSize(config.paperSize);
+    setOrientation(config.orientation);
+    setViewMode('classroom');
+  }, []);
+
+  const handleExitClassroom = useCallback(() => {
+    setClassroomConfig(null);
+    setViewMode('generator');
+  }, []);
+
+  // When classroom finishes, push the result into the gallery and navigate.
+  const handleClassroomComplete = useCallback((item: GalleryItem) => {
+    setGallery((prev) => [item, ...prev]);
+    setActiveItem(item);
+    setCurrentImage(item.image);
+    clear();
+    // Stay on classroom screen so the teacher sees the completion card.
+    // They press "갤러리에서 보기" to exit; that calls handleExitClassroom.
+  }, [setCurrentImage, clear]);
 
   // Gallery item selected - go to detail view
   const handleSelectItem = useCallback((id: string) => {
@@ -284,6 +342,27 @@ export default function App() {
     );
   }
 
+  // Classroom mode is rendered full-width (no sidebar/canvas split).
+  if (viewMode === 'classroom' && classroomConfig && apiKey) {
+    return (
+      <div className="app">
+        <Toast toast={toast} onClose={clearToast} />
+        <Header apiKey={apiKey} onSettingsClick={handleSettingsClick} />
+        <main className="workspace workspace--classroom">
+          <TeacherAuthGate onBack={handleExitClassroom}>
+            <ClassroomView
+              config={classroomConfig}
+              apiKey={apiKey}
+              onToast={setToast}
+              onComplete={handleClassroomComplete}
+              onExit={handleExitClassroom}
+            />
+          </TeacherAuthGate>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <Toast toast={toast} onClose={clearToast} />
@@ -295,6 +374,7 @@ export default function App() {
           <GeneratorForm
             isLoading={isLoading}
             onGenerate={handleGenerate}
+            onEnterClassroom={handleEnterClassroom}
             onToast={setToast}
           />
           {viewMode === 'detail' && currentImage && (
