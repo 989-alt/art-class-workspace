@@ -2,37 +2,6 @@
     width: 100%;
 }
 
-.canvas-preview__cvd-tabs {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 10px;
-    justify-content: flex-end;
-}
-
-.canvas-preview__cvd-tab {
-    padding: 6px 12px;
-    border-radius: 999px;
-    border: 1.5px solid rgba(0, 0, 0, 0.08);
-    background: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.18s ease;
-    min-width: 36px;
-}
-
-.canvas-preview__cvd-tab:hover {
-    border-color: rgba(0, 0, 0, 0.2);
-    color: var(--text-primary);
-}
-
-.canvas-preview__cvd-tab--active {
-    border-color: var(--primary);
-    color: var(--primary);
-    background: rgba(239, 68, 68, 0.06);
-}
-
 .canvas-preview__container {
     position: relative;
     border-radius: 16px;

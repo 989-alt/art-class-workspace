@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import type { GenerationConfig, Mode, Difficulty, MandalaPreset, Orientation, PaperSize, ToastMessage } from '../../types';
 import type { CurriculumPreset } from '../../types/curriculum';
 import { CURRICULUM_PRESETS } from '../../data/curriculumPresets';
-import { isSupabaseConfigured } from '../../lib/supabaseClient';
 import ModeSelector from './ModeSelector';
 import DifficultySlider from './DifficultySlider';
 import OrientationSelector from './OrientationSelector';
@@ -16,14 +15,10 @@ import './GeneratorForm.css';
 interface GeneratorFormProps {
     isLoading: boolean;
     onGenerate: (config: GenerationConfig, count: number) => void;
-    onEnterClassroom?: (config: GenerationConfig) => void;
     onToast?: (toast: ToastMessage) => void;
 }
 
-// "학급 모드는 Supabase 설정이 필요합니다 (SUPABASE_SETUP.md 참고)"
-const CLASSROOM_DISABLED_TOOLTIP = '학급 모드는 Supabase 설정이 필요합니다 (SUPABASE_SETUP.md 참고)';
-
-export default function GeneratorForm({ isLoading, onGenerate, onEnterClassroom, onToast }: GeneratorFormProps) {
+export default function GeneratorForm({ isLoading, onGenerate, onToast }: GeneratorFormProps) {
     const [mode, setMode] = useState<Mode>('free');
     const [topic, setTopic] = useState('');
     const [mandalaPreset, setMandalaPreset] = useState<MandalaPreset>('flower');
@@ -35,8 +30,6 @@ export default function GeneratorForm({ isLoading, onGenerate, onEnterClassroom,
     const [generationCount, setGenerationCount] = useState(1);
     const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
     const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-
-    const supabaseConfigured = useMemo(() => isSupabaseConfigured(), []);
 
     // Derive activePreset from selectedPresetId — single source of truth.
     const activePreset = useMemo<CurriculumPreset | null>(
@@ -99,20 +92,10 @@ export default function GeneratorForm({ isLoading, onGenerate, onEnterClassroom,
         onGenerate(config, generationCount);
     };
 
-    const handleClassroomClick = () => {
-        const config = buildConfig();
-        if (!config) return;
-        onEnterClassroom?.(config);
-    };
-
     const canSubmit =
         mode === 'mandala' ||
         (mode === 'free' && topic.trim().length > 0) ||
         (mode === 'curriculum' && selectedPresetId !== null);
-
-    const showClassroomButton =
-        mode === 'curriculum' && selectedPresetId !== null && Boolean(onEnterClassroom);
-    const classroomEnabled = showClassroomButton && supabaseConfigured;
 
     return (
         <form className="gen-form" onSubmit={handleSubmit}>
@@ -200,18 +183,6 @@ export default function GeneratorForm({ isLoading, onGenerate, onEnterClassroom,
                     '🎨 도안 생성'
                 )}
             </button>
-
-            {showClassroomButton && (
-                <button
-                    type="button"
-                    className="gen-form__classroom"
-                    onClick={handleClassroomClick}
-                    disabled={isLoading || !classroomEnabled}
-                    title={!supabaseConfigured ? CLASSROOM_DISABLED_TOOLTIP : undefined}
-                >
-                    📡 학급 모드로 진행
-                </button>
-            )}
         </form>
     );
 }

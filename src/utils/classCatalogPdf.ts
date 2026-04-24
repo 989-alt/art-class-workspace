@@ -35,7 +35,6 @@ const ANON_LABEL = '익명'; // "익명"
  *  - cover page with unit title / unit code / session code / teacher name /
  *    approved count / generated-at date
  *  - body: 2x3 grid per page, each tile = image + nickname
- *  - bottom-centered watermark on every page matching pdfExporter.ts format
  *
  * Images are loaded through an offscreen canvas with crossOrigin="anonymous"
  * so jsPDF can embed them. If a single image fails (CORS, 404, network), the
@@ -48,11 +47,9 @@ export async function exportClassCatalog(
 ): Promise<void> {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const generatedAt = meta.generatedAt ?? new Date();
-    const watermark = buildWatermark(generatedAt);
 
     // --- Cover page ---
     drawCoverPage(doc, meta, items.length, generatedAt);
-    drawWatermark(doc, watermark);
 
     // --- Body pages ---
     if (items.length > 0) {
@@ -97,8 +94,6 @@ export async function exportClassCatalog(
                     idx + 1
                 );
             }
-
-            drawWatermark(doc, watermark);
         }
     }
 
@@ -276,21 +271,6 @@ function drawCoverPage(
         PAGE_H - 25,
         { align: 'center' }
     );
-}
-
-function drawWatermark(doc: jsPDF, text: string): void {
-    doc.setTextColor(153);
-    doc.setFontSize(6);
-    doc.text(text, PAGE_W / 2, PAGE_H - 6, { align: 'center' });
-}
-
-function buildWatermark(now: Date): string {
-    const yyyy = now.getFullYear();
-    const mm = pad2(now.getMonth() + 1);
-    const dd = pad2(now.getDate());
-    const hh = pad2(now.getHours());
-    const mi = pad2(now.getMinutes());
-    return `SEONBI's Art Class · ${yyyy}-${mm}-${dd} ${hh}:${mi}`;
 }
 
 function formatDateKorean(d: Date): string {

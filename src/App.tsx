@@ -1,12 +1,10 @@
-import { lazy, Suspense, useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useApiKey } from './hooks/useApiKey';
 import { useGeneration } from './hooks/useGeneration';
 import { useHistory } from './hooks/useHistory';
-import { useTeacherAuth } from './hooks/useTeacherAuth';
 import { exportToZip } from './utils/zipExporter';
 import { applyLineWeightBoost } from './utils/lineWeightBoost';
-import { CURRICULUM_PRESETS } from './data/curriculumPresets';
-import type { GenerationConfig, GalleryItem, PaperSize, Orientation } from './types';
+import type { GalleryItem, GenerationConfig, PaperSize, Orientation } from './types';
 
 import Header from './components/common/Header';
 import Toast from './components/common/Toast';
@@ -19,38 +17,13 @@ import HistoryStack from './components/History/HistoryStack';
 import ExportPanel from './components/Export/ExportPanel';
 import Gallery from './components/Gallery/Gallery';
 
-// Classroom + student modules are lazy-loaded. They pull in Supabase, QRCode,
-// and (transitively, via SessionHost → ClassGallery → classCatalogPdf) the
-// jsPDF + html2canvas catalog export — together ~200 kB of JS that a teacher
-// running in solo mode or a no-classroom session never needs.
-const TeacherAuthGate = lazy(() => import('./components/Classroom/TeacherAuthGate'));
-const SessionHost = lazy(() => import('./components/Classroom/SessionHost'));
-const StudentVoteView = lazy(() => import('./components/Classroom/StudentVoteView'));
+// TODO(v3-T2/T4): Classroom and student routes are temporarily disabled while
+// the v3 LMS architecture is wired up. Lazy imports for SessionHost,
+// StudentVoteView, and TeacherAuthGate were removed in v3-T0.
 
 import './App.css';
 
-type ViewMode = 'generator' | 'gallery' | 'detail' | 'classroom';
-
-// Match /session/ABC123 anywhere in the pathname suffix so this works under
-// GitHub Pages subpaths (e.g. /art-class/session/ABC123) without hardcoding
-// the base. The session code alphabet excludes I, O, 0, 1 (see sessionCode.ts).
-const STUDENT_PATH_REGEX = /\/session\/([A-HJ-NP-Z2-9]{6})\/?$/i;
-
-function detectStudentSessionCode(pathname: string): string | null {
-  const match = pathname.match(STUDENT_PATH_REGEX);
-  return match ? match[1].toUpperCase() : null;
-}
-
-// Derive the curriculum unit label for the copyright certificate.
-// Returns null when the active item wasn't generated from a curriculum preset.
-function deriveUnitLabel(item: GalleryItem | null): string | null {
-  if (!item) return null;
-  const { config } = item;
-  if (config.mode !== 'curriculum' || !config.presetId) return null;
-  const preset = CURRICULUM_PRESETS.find((p) => p.id === config.presetId);
-  if (!preset) return null;
-  return `${preset.grade}-${preset.semester} ${preset.subject} 「${preset.unitTitle}」`;
-}
+type ViewMode = 'generator' | 'gallery' | 'detail';
 
 // "선 굵기 +20% 보정이 적용되었습니다."
 const BOOST_APPLIED_MESSAGE = '선 굵기 +20% 보정이 적용되었습니다.';
@@ -59,65 +32,9 @@ const BOOST_ALREADY_MESSAGE = '이미 적용됨';
 // "선 굵기 보정 중 오류가 발생했습니다."
 const BOOST_ERROR_MESSAGE = '선 굵기 보정 중 오류가 발생했습니다.';
 
-// "학급 모드를 불러오는 중..."
-const CLASSROOM_LOADING_MESSAGE = '학급 모드를 불러오는 중...';
-// "세션을 여는 중..."
-const STUDENT_LOADING_MESSAGE = '세션을 여는 중...';
-
-// Thin adapter component so we can read `user` inside the authed subtree.
-function ClassroomView({
-  config,
-  apiKey,
-  onToast,
-  onComplete,
-  onExit,
-}: {
-  config: GenerationConfig;
-  apiKey: string;
-  onToast: React.ComponentProps<typeof SessionHost>['onToast'];
-  onComplete: React.ComponentProps<typeof SessionHost>['onComplete'];
-  onExit: () => void;
-}) {
-  const { user } = useTeacherAuth();
-  if (!user) return null;
-  return (
-    <SessionHost
-      config={config}
-      apiKey={apiKey}
-      user={user}
-      onToast={onToast}
-      onComplete={onComplete}
-      onExit={onExit}
-    />
-  );
-}
-
-// Minimal text fallback for lazy-loaded module boundaries. Intentionally does
-// NOT reuse SkeletonLoader — that component expects a specific paper/grid
-// context that classroom routes don't have. A role=status with polite live
-// region is enough for screen readers and visually unobtrusive.
-function LazyFallback({ message }: { message: string }) {
-  return (
-    <div className="app-lazy-fallback" role="status" aria-live="polite">
-      {message}
-    </div>
-  );
-}
-
 export default function App() {
-  // Student route detection: react to back/forward and initial mount.
-  // Kept above any other hooks so the order is stable across re-renders.
-  const [studentCode, setStudentCode] = useState<string | null>(() =>
-    typeof window !== 'undefined' ? detectStudentSessionCode(window.location.pathname) : null
-  );
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const handler = () => {
-      setStudentCode(detectStudentSessionCode(window.location.pathname));
-    };
-    window.addEventListener('popstate', handler);
-    return () => window.removeEventListener('popstate', handler);
-  }, []);
+  // TODO(v3-T4): v2 student vote route was removed in v3-T0; v3 will introduce
+  // /class/:code instead.
 
   const { apiKey, hasApiKey, isLoaded, setApiKey, clearApiKey } = useApiKey();
   const { currentImage, isLoading, generationProgress, generate, edit, setCurrentImage, toast, setToast, clearToast } = useGeneration();
@@ -133,9 +50,6 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>('generator');
   const [activeItem, setActiveItem] = useState<GalleryItem | null>(null);
-
-  // Classroom mode
-  const [classroomConfig, setClassroomConfig] = useState<GenerationConfig | null>(null);
 
   // Line-boost applied flags — per active item id. Prevents stacking the
   // dilation effect when the teacher clicks "적용" multiple times.
@@ -173,30 +87,6 @@ export default function App() {
     },
     [apiKey, generate, clear, setCurrentImage]
   );
-
-  const handleEnterClassroom = useCallback((config: GenerationConfig) => {
-    setClassroomConfig(config);
-    setGridN(config.gridN);
-    setGridM(config.gridM);
-    setPaperSize(config.paperSize);
-    setOrientation(config.orientation);
-    setViewMode('classroom');
-  }, []);
-
-  const handleExitClassroom = useCallback(() => {
-    setClassroomConfig(null);
-    setViewMode('generator');
-  }, []);
-
-  // When classroom finishes, push the result into the gallery and navigate.
-  const handleClassroomComplete = useCallback((item: GalleryItem) => {
-    setGallery((prev) => [item, ...prev]);
-    setActiveItem(item);
-    setCurrentImage(item.image);
-    clear();
-    // Stay on classroom screen so the teacher sees the completion card.
-    // They press "갤러리에서 보기" to exit; that calls handleExitClassroom.
-  }, [setCurrentImage, clear]);
 
   // Gallery item selected - go to detail view
   const handleSelectItem = useCallback((id: string) => {
@@ -361,16 +251,6 @@ export default function App() {
     setShowKeySetup(false);
   }, [clearApiKey]);
 
-  // Student route: render a minimal standalone page. No header, no workspace,
-  // no teacher auth. Students do NOT need an API key.
-  if (studentCode) {
-    return (
-      <Suspense fallback={<LazyFallback message={STUDENT_LOADING_MESSAGE} />}>
-        <StudentVoteView sessionCode={studentCode} />
-      </Suspense>
-    );
-  }
-
   // Wait for localStorage load
   if (!isLoaded) return null;
 
@@ -403,29 +283,6 @@ export default function App() {
     );
   }
 
-  // Classroom mode is rendered full-width (no sidebar/canvas split).
-  if (viewMode === 'classroom' && classroomConfig && apiKey) {
-    return (
-      <div className="app">
-        <Toast toast={toast} onClose={clearToast} />
-        <Header apiKey={apiKey} onSettingsClick={handleSettingsClick} />
-        <main className="workspace workspace--classroom">
-          <Suspense fallback={<LazyFallback message={CLASSROOM_LOADING_MESSAGE} />}>
-            <TeacherAuthGate onBack={handleExitClassroom}>
-              <ClassroomView
-                config={classroomConfig}
-                apiKey={apiKey}
-                onToast={setToast}
-                onComplete={handleClassroomComplete}
-                onExit={handleExitClassroom}
-              />
-            </TeacherAuthGate>
-          </Suspense>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="app">
       <Toast toast={toast} onClose={clearToast} />
@@ -437,7 +294,6 @@ export default function App() {
           <GeneratorForm
             isLoading={isLoading}
             onGenerate={handleGenerate}
-            onEnterClassroom={handleEnterClassroom}
             onToast={setToast}
           />
           {viewMode === 'detail' && currentImage && (
@@ -447,9 +303,6 @@ export default function App() {
               gridM={gridM}
               paperSize={paperSize}
               orientation={orientation}
-              itemPrompt={activeItem?.prompt}
-              itemCreatedAt={activeItem?.createdAt}
-              unitLabel={deriveUnitLabel(activeItem)}
             />
           )}
 
