@@ -1,14 +1,15 @@
 /**
- * Color Vision Deficiency (CVD) simulation utilities.
+ * CVD (Color Vision Deficiency) simulation matrices.
  *
- * Matrices are taken from Machado, Oliveira, Fernandes (2009) CVD simulation
- * (widely used approximations of Brettel/Viénot models) applied directly
- * in sRGB space for a fast canvas post-process. Source image pixels are
- * multiplied by the 3x3 matrix and clamped to [0, 255].
+ * Based on Machado, Oliveira, Fernandes (2009) severity=1.0 coefficients.
+ * For simplicity and runtime budget, we apply the transform directly to
+ * 8-bit sRGB values (not linearized RGB). This produces a fast approximation
+ * suitable for teacher-facing preview, but is NOT clinically accurate —
+ * reds and saturated hues will shift slightly more than the ground-truth
+ * linear-light transform.
  *
- * These approximations are good enough for "teacher preview" purposes —
- * they tell the educator whether a coloring design still conveys its line
- * structure to students with red-green or blue-yellow color vision deficits.
+ * If higher fidelity is needed, wrap the matrix multiply with an
+ * sRGB → linear → sRGB round-trip at ~2x cost per pixel.
  */
 
 export type CvdMode = 'normal' | 'D' | 'P' | 'T';

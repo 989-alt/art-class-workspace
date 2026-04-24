@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useApiKey } from './hooks/useApiKey';
 import { useGeneration } from './hooks/useGeneration';
 import { useHistory } from './hooks/useHistory';
@@ -47,6 +47,12 @@ export default function App() {
   // Line-boost applied flags — per active item id. Prevents stacking the
   // dilation effect when the teacher clicks "적용" multiple times.
   const [boostedIds, setBoostedIds] = useState<Set<string>>(new Set());
+
+  // UI-reactive loading flag while the boost runs; also used to gate the button.
+  const [isBoosting, setIsBoosting] = useState(false);
+  // Synchronous in-flight guard — blocks duplicate entries during the await
+  // window that state batching cannot prevent (double-clicks within ~500ms).
+  const isBoostingRef = useRef(false);
 
   const handleGenerate = useCallback(
     async (config: GenerationConfig, count: number) => {
@@ -165,21 +171,39 @@ export default function App() {
     const previousImage = undo();
     if (previousImage) {
       setCurrentImage(previousImage);
+      // If we're reverting past a boost application, clear the boosted flag
+      // so the user can re-apply it without hitting the "이미 적용됨" guard.
+      if (activeItem) {
+        setBoostedIds((prev) => {
+          if (!prev.has(activeItem.id)) return prev;
+          const next = new Set(prev);
+          next.delete(activeItem.id);
+          return next;
+        });
+      }
       handleImageEdited();
     }
-  }, [undo, setCurrentImage, handleImageEdited]);
+  }, [undo, setCurrentImage, handleImageEdited, activeItem]);
 
   // Apply line-weight boost to the current image. Idempotent per gallery item:
   // if already applied, show a subtle toast and bail out.
   const handleApplyLineBoost = useCallback(async () => {
     if (!currentImage || !activeItem) return;
+    // Guard against double-clicks within the async window. setState would
+    // queue but not flush in time, so we use a synchronous ref.
+    if (isBoostingRef.current) return;
     if (boostedIds.has(activeItem.id)) {
       setToast({ id: '', type: 'warning', message: BOOST_ALREADY_MESSAGE });
       return;
     }
+    // Capture the pre-boost image BEFORE the await so the value pushed to
+    // history and passed to the boost function cannot be mutated from under us.
+    const preBoost = currentImage;
     try {
-      const boosted = await applyLineWeightBoost(currentImage);
-      push(currentImage); // preserve pre-boost for undo
+      isBoostingRef.current = true;
+      setIsBoosting(true);
+      const boosted = await applyLineWeightBoost(preBoost);
+      push(preBoost); // preserve pre-boost for undo
       setCurrentImage(boosted);
       // Reflect in gallery and active item
       setGallery((prev) =>
@@ -197,6 +221,9 @@ export default function App() {
     } catch (err) {
       console.error('Line boost failed:', err);
       setToast({ id: '', type: 'error', message: BOOST_ERROR_MESSAGE });
+    } finally {
+      isBoostingRef.current = false;
+      setIsBoosting(false);
     }
   }, [currentImage, activeItem, boostedIds, push, setCurrentImage, setToast]);
 
@@ -330,6 +357,7 @@ export default function App() {
                 paperSize={paperSize}
                 orientation={orientation}
                 isLoading={isLoading}
+                isBoosting={isBoosting}
                 onApplyLineBoost={handleApplyLineBoost}
               />
 

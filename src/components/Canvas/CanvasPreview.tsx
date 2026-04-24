@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { PaperSize, Orientation } from '../../types';
 import { PAPER_DIMENSIONS } from '../../types';
 import { applyCvdSimulation, getCvdMatrix, type CvdMode } from '../../utils/cvdSimulation';
@@ -11,6 +11,7 @@ interface CanvasPreviewProps {
     paperSize: PaperSize;
     orientation: Orientation;
     isLoading: boolean;
+    isBoosting?: boolean;
     onApplyLineBoost?: () => void;
 }
 
@@ -31,6 +32,10 @@ const CVD_TABS: CvdTab[] = [
 const BOOST_PILL_TEXT = '선 굵기 +20% 자동 보정';
 // "적용"
 const BOOST_APPLY_LABEL = '적용';
+// "적용 중..."
+const BOOST_APPLYING_LABEL = '적용 중...';
+// aria-label for the apply button — provides context beyond the visible "적용" text
+const BOOST_APPLY_ARIA = '선 굵기 +20% 보정 적용';
 
 export default function CanvasPreview({
     image,
@@ -39,42 +44,49 @@ export default function CanvasPreview({
     paperSize,
     orientation,
     isLoading,
+    isBoosting = false,
     onApplyLineBoost,
 }: CanvasPreviewProps) {
     const [cvdMode, setCvdMode] = useState<CvdMode>('normal');
     const [cvdDataUrl, setCvdDataUrl] = useState<string | null>(null);
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-    // Reset CVD state whenever the underlying source image changes
+    // Reset CVD mode whenever the underlying source image changes.
+    // This is a separate effect with a distinct concern (mode reset), so the
+    // merged render effect below doesn't need to race on image identity.
+    // Setting cvdMode='normal' will retrigger the render effect, which hits
+    // the early return and clears cvdDataUrl safely.
     useEffect(() => {
         setCvdMode('normal');
-        setCvdDataUrl(null);
     }, [image]);
 
-    // Render CVD simulation whenever mode or image changes
+    // Render CVD simulation whenever mode or image changes.
+    // Uses a local canvas per run (not a shared ref) so concurrent runs from
+    // rapid mode toggling cannot stomp on each other's drawImage/getImageData.
     useEffect(() => {
         if (!image || cvdMode === 'normal') {
             setCvdDataUrl(null);
             return;
         }
 
-        let cancelled = false;
         const matrix = getCvdMatrix(cvdMode);
         if (!matrix) {
             setCvdDataUrl(null);
             return;
         }
 
+        let cancelled = false;
         const img = new Image();
         img.onload = () => {
             if (cancelled) return;
-            const canvas = canvasRef.current ?? document.createElement('canvas');
+            // Local scratch canvas — isolated per effect run.
+            const canvas = document.createElement('canvas');
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
             ctx.drawImage(img, 0, 0);
             applyCvdSimulation(ctx, matrix);
+            if (cancelled) return;
             setCvdDataUrl(canvas.toDataURL('image/png'));
         };
         img.onerror = () => {
@@ -163,8 +175,11 @@ export default function CanvasPreview({
                         type="button"
                         className="canvas-preview__boost-apply"
                         onClick={onApplyLineBoost}
+                        disabled={isBoosting}
+                        aria-label={BOOST_APPLY_ARIA}
+                        aria-busy={isBoosting}
                     >
-                        {BOOST_APPLY_LABEL}
+                        {isBoosting ? BOOST_APPLYING_LABEL : BOOST_APPLY_LABEL}
                     </button>
                 </div>
             )}
@@ -172,9 +187,6 @@ export default function CanvasPreview({
             <div className="canvas-preview__info">
                 {paperSize} {orientation === 'vertical' ? '세로' : '가로'} • {gridN}×{gridM} 그리드
             </div>
-
-            {/* Hidden canvas used as a scratch surface for CVD rendering */}
-            <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
     );
 }
