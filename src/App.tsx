@@ -18,6 +18,11 @@ import ExportPanel from './components/Export/ExportPanel';
 import Gallery from './components/Gallery/Gallery';
 import TeacherAuthGate from './components/Classroom/TeacherAuthGate';
 import ClassroomPanel from './components/Classroom/ClassroomPanel';
+import PublishAssignmentDialog from './components/Classroom/PublishAssignmentDialog';
+import { useClassroom } from './hooks/useClassroom';
+import { useAssignments } from './hooks/useAssignments';
+import { uploadClassroomAsset } from './lib/assetUpload';
+import { isSupabaseConfigured } from './lib/supabaseClient';
 
 // TODO(v3-T4): Student /class/:code route lands in a later task.
 
@@ -60,6 +65,18 @@ export default function App() {
   // Synchronous in-flight guard — blocks duplicate entries during the await
   // window that state batching cannot prevent (double-clicks within ~500ms).
   const isBoostingRef = useRef(false);
+
+  // Classroom publishing — useClassroom safely returns null when Supabase is
+  // not configured or the teacher hasn't logged in yet. The publish button
+  // remains disabled in those cases.
+  const supabaseEnabled = isSupabaseConfigured();
+  const { classroom } = useClassroom();
+  const { create: createAssignment } = useAssignments(classroom?.id ?? null);
+
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
+  const [publishSubmitting, setPublishSubmitting] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [publishSuccess, setPublishSuccess] = useState(false);
 
   const handleGenerate = useCallback(
     async (config: GenerationConfig, count: number) => {
@@ -259,6 +276,49 @@ export default function App() {
     setViewMode('generator');
   }, []);
 
+  const handlePublishOpen = useCallback(() => {
+    if (!classroom || !activeItem) return;
+    setPublishError(null);
+    setPublishSuccess(false);
+    setPublishDialogOpen(true);
+  }, [classroom, activeItem]);
+
+  const handlePublishClose = useCallback(() => {
+    if (publishSubmitting) return;
+    setPublishDialogOpen(false);
+    setPublishError(null);
+    setPublishSuccess(false);
+  }, [publishSubmitting]);
+
+  const handlePublishSubmit = useCallback(
+    async (title: string) => {
+      if (!classroom || !activeItem) return;
+      setPublishSubmitting(true);
+      setPublishError(null);
+      try {
+        const { publicUrl } = await uploadClassroomAsset(classroom.id, activeItem.image);
+        await createAssignment({
+          title,
+          image_url: publicUrl,
+          prompt: activeItem.prompt ?? null,
+        });
+        setPublishSuccess(true);
+      } catch (err) {
+        setPublishError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setPublishSubmitting(false);
+      }
+    },
+    [classroom, activeItem, createAssignment]
+  );
+
+  const handlePublishGoToClassroom = useCallback(() => {
+    setPublishDialogOpen(false);
+    setPublishSuccess(false);
+    setPublishError(null);
+    setViewMode('classroom');
+  }, []);
+
   // Wait for localStorage load
   if (!isLoaded) return null;
 
@@ -331,6 +391,9 @@ export default function App() {
               gridM={gridM}
               paperSize={paperSize}
               orientation={orientation}
+              onPublishToClassroom={supabaseEnabled ? handlePublishOpen : undefined}
+              classroomName={classroom?.name ?? null}
+              isPublishing={publishSubmitting}
             />
           )}
 
@@ -426,6 +489,19 @@ export default function App() {
           )}
         </section>
       </main>
+
+      {publishDialogOpen && classroom && activeItem && (
+        <PublishAssignmentDialog
+          classroomName={classroom.name}
+          defaultTitle={activeItem.config.selectedTopic || activeItem.config.topic || '새 도안'}
+          isSubmitting={publishSubmitting}
+          error={publishError}
+          success={publishSuccess}
+          onCancel={handlePublishClose}
+          onSubmit={handlePublishSubmit}
+          onGoToClassroom={handlePublishGoToClassroom}
+        />
+      )}
     </div>
   );
 }

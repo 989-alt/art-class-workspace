@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import QRCode from 'qrcode';
 import { useClassroom } from '../../hooks/useClassroom';
+import { useAssignments } from '../../hooks/useAssignments';
+import type { Assignment } from '../../types/classroom';
 import './ClassroomPanel.css';
 
 interface ClassroomPanelProps {
@@ -33,8 +35,13 @@ const L = {
     copied: '복사되었습니다',
     studentUrlLabel: '학생 접속 주소',
     assignmentsTitle: '과제',
+    assignmentsLoading: '과제를 불러오는 중...',
+    assignmentsError: '과제를 불러오지 못했습니다.',
     assignmentsEmpty:
         '아직 과제가 없습니다. 도안을 만들고 결과 화면에서 ‘우리 학급에 게시’를 눌러 보세요.',
+    assignmentDelete: '삭제',
+    assignmentDeleteConfirm: '이 과제를 삭제하시겠어요? 학생 제출은 함께 사라질 수 있습니다.',
+    assignmentThumbAlt: '과제 썸네일',
     galleryTitle: '전시장',
     galleryEmpty: '아직 승인된 작품이 없습니다.',
 };
@@ -50,8 +57,72 @@ function buildStudentUrl(code: string): string {
     return `${origin}${base}#/class/${code}`;
 }
 
+function formatCreatedAt(iso: string): string {
+    try {
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return iso;
+        return d.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        });
+    } catch {
+        return iso;
+    }
+}
+
+interface AssignmentRowProps {
+    assignment: Assignment;
+    onDelete: (id: string) => void;
+    isDeleting: boolean;
+}
+
+function AssignmentRow({ assignment, onDelete, isDeleting }: AssignmentRowProps) {
+    const handleDelete = () => {
+        if (isDeleting) return;
+        if (window.confirm(L.assignmentDeleteConfirm)) {
+            onDelete(assignment.id);
+        }
+    };
+    return (
+        <li className="classroom-panel__assignment">
+            <div className="classroom-panel__assignment-thumb-wrap">
+                <img
+                    className="classroom-panel__assignment-thumb"
+                    src={assignment.image_url}
+                    alt={L.assignmentThumbAlt}
+                    loading="lazy"
+                />
+            </div>
+            <div className="classroom-panel__assignment-meta">
+                <span className="classroom-panel__assignment-title">{assignment.title}</span>
+                <span className="classroom-panel__assignment-date">
+                    {formatCreatedAt(assignment.created_at)}
+                </span>
+            </div>
+            <button
+                type="button"
+                className="classroom-panel__assignment-delete"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                aria-label={L.assignmentDelete}
+                title={L.assignmentDelete}
+            >
+                <span aria-hidden="true">🗑️</span>
+            </button>
+        </li>
+    );
+}
+
 export default function ClassroomPanel({ onBack }: ClassroomPanelProps) {
     const { classroom, isLoading, error, create, rename } = useClassroom();
+    const {
+        assignments,
+        isLoading: assignmentsLoading,
+        error: assignmentsError,
+        remove: removeAssignment,
+    } = useAssignments(classroom?.id ?? null);
+
     const [createName, setCreateName] = useState('');
     const [creating, setCreating] = useState(false);
     const [createError, setCreateError] = useState<string | null>(null);
@@ -63,6 +134,9 @@ export default function ClassroomPanel({ onBack }: ClassroomPanelProps) {
 
     const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
     const [copyNotice, setCopyNotice] = useState<string | null>(null);
+
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const studentUrl = useMemo(
         () => (classroom ? buildStudentUrl(classroom.code) : ''),
@@ -152,6 +226,18 @@ export default function ClassroomPanel({ onBack }: ClassroomPanelProps) {
             } finally {
                 document.body.removeChild(ta);
             }
+        }
+    };
+
+    const handleAssignmentDelete = async (id: string) => {
+        setDeletingId(id);
+        setDeleteError(null);
+        try {
+            await removeAssignment(id);
+        } catch (err) {
+            setDeleteError(err instanceof Error ? err.message : String(err));
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -302,8 +388,41 @@ export default function ClassroomPanel({ onBack }: ClassroomPanelProps) {
 
                     <section className="classroom-panel__assignments">
                         <h2 className="classroom-panel__section-title">{L.assignmentsTitle}</h2>
-                        {/* Placeholder for v3-T3. Real assignment list lands later. */}
-                        <p className="classroom-panel__placeholder">{L.assignmentsEmpty}</p>
+
+                        {assignmentsLoading && (
+                            <p className="classroom-panel__placeholder">
+                                {L.assignmentsLoading}
+                            </p>
+                        )}
+
+                        {!assignmentsLoading && assignmentsError && (
+                            <p className="classroom-panel__error">
+                                {L.assignmentsError} {assignmentsError}
+                            </p>
+                        )}
+
+                        {!assignmentsLoading && !assignmentsError && assignments.length === 0 && (
+                            <p className="classroom-panel__placeholder">
+                                {L.assignmentsEmpty}
+                            </p>
+                        )}
+
+                        {!assignmentsLoading && assignments.length > 0 && (
+                            <ul className="classroom-panel__assignment-list">
+                                {assignments.map((a) => (
+                                    <AssignmentRow
+                                        key={a.id}
+                                        assignment={a}
+                                        onDelete={handleAssignmentDelete}
+                                        isDeleting={deletingId === a.id}
+                                    />
+                                ))}
+                            </ul>
+                        )}
+
+                        {deleteError && (
+                            <p className="classroom-panel__error">{deleteError}</p>
+                        )}
                     </section>
 
                     <section className="classroom-panel__gallery">

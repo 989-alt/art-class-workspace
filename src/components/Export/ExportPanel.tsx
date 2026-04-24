@@ -11,6 +11,9 @@ interface ExportPanelProps {
     gridM: number;
     paperSize: PaperSize;
     orientation: Orientation;
+    onPublishToClassroom?: () => void;
+    classroomName?: string | null;
+    isPublishing?: boolean;
 }
 
 export default function ExportPanel({
@@ -19,6 +22,9 @@ export default function ExportPanel({
     gridM,
     paperSize,
     orientation,
+    onPublishToClassroom,
+    classroomName,
+    isPublishing,
 }: ExportPanelProps) {
     const [isExporting, setIsExporting] = useState<'png' | 'svg' | 'pdf' | null>(null);
 
@@ -105,6 +111,35 @@ export default function ExportPanel({
                     )}
                 </button>
             </div>
+
+            {onPublishToClassroom && (
+                <div className="export-panel__publish">
+                    <div className="export-panel__divider" aria-hidden="true" />
+                    <button
+                        className="export-panel__btn export-panel__btn--publish"
+                        onClick={onPublishToClassroom}
+                        disabled={!!isExporting || isPublishing || !classroomName}
+                        title={
+                            classroomName
+                                ? undefined
+                                : "먼저 '🏫 내 학급' 에서 학급을 만드세요."
+                        }
+                    >
+                        {isPublishing ? (
+                            <><span className="spinner spinner--sm" /> 게시 중...</>
+                        ) : (
+                            <span className="export-panel__btn-content">
+                                <span className="export-panel__btn-label">📤 우리 학급에 게시</span>
+                                {classroomName && (
+                                    <span className="export-panel__btn-sub">
+                                        {classroomName} 에 공유
+                                    </span>
+                                )}
+                            </span>
+                        )}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
