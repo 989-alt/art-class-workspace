@@ -23,10 +23,15 @@ export default function Toast({ toast, onClose }: ToastProps) {
     };
 
     return (
-        <div className={`toast toast--${toast.type}`} key={toast.id}>
-            <span className="toast__icon">{icons[toast.type]}</span>
+        <div
+            className={`toast toast--${toast.type}`}
+            key={toast.id}
+            role={toast.type === 'error' ? 'alert' : 'status'}
+            aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+        >
+            <span className="toast__icon" aria-hidden="true">{icons[toast.type]}</span>
             <span className="toast__msg">{toast.message}</span>
-            <button className="toast__close" onClick={onClose}>×</button>
+            <button className="toast__close" onClick={onClose} aria-label="닫기">×</button>
         </div>
     );
 }

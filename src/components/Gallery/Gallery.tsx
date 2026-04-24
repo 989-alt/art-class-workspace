@@ -25,7 +25,7 @@ export default function Gallery({
     if (items.length === 0) {
         return (
             <div className="gallery gallery--empty">
-                <div className="gallery__empty-icon">🖼️</div>
+                <div className="gallery__empty-icon" aria-hidden="true">🖼️</div>
                 <h3>갤러리가 비어 있습니다</h3>
                 <p>도안을 생성하면 이곳에 저장됩니다</p>
             </div>
@@ -39,7 +39,7 @@ export default function Gallery({
         <div className="gallery">
             <div className="gallery__header">
                 <h3 className="gallery__title">
-                    🖼️ 갤러리 <span className="gallery__count">{items.length}개</span>
+                    <span aria-hidden="true">🖼️</span> 갤러리 <span className="gallery__count">{items.length}개</span>
                 </h3>
                 <div className="gallery__actions">
                     <button
@@ -64,38 +64,54 @@ export default function Gallery({
                 </div>
             </div>
 
-            <div className="gallery__grid">
-                {items.map((item) => (
-                    <div
-                        key={item.id}
-                        className={`gallery__item ${selectedIds.has(item.id) ? 'gallery__item--selected' : ''}`}
-                    >
-                        <div
-                            className="gallery__checkbox"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onToggleSelect(item.id);
-                            }}
+            <ul className="gallery__grid">
+                {items.map((item) => {
+                    const isSelected = selectedIds.has(item.id);
+                    const label = item.config.mode === 'mandala'
+                        ? '만다라 도안'
+                        : `${item.config.topic.slice(0, 20)} 도안`;
+                    return (
+                        <li
+                            key={item.id}
+                            className={`gallery__item ${isSelected ? 'gallery__item--selected' : ''}`}
                         >
-                            {selectedIds.has(item.id) ? '✓' : ''}
-                        </div>
-                        <img
-                            className="gallery__thumbnail"
-                            src={`data:image/png;base64,${item.image}`}
-                            alt="생성된 도안"
-                            onClick={() => onSelect(item.id)}
-                        />
-                        <div className="gallery__item-info">
-                            <span className="gallery__item-mode">
-                                {item.config.mode === 'mandala' ? '🔮 만다라' : `✏️ ${item.config.topic.slice(0, 10)}`}
-                            </span>
-                            <span className="gallery__item-time">
-                                {formatTime(item.createdAt)}
-                            </span>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                            <button
+                                type="button"
+                                role="checkbox"
+                                aria-checked={isSelected}
+                                aria-label={`${label} 선택`}
+                                className="gallery__checkbox"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onToggleSelect(item.id);
+                                }}
+                            >
+                                {isSelected ? '✓' : ''}
+                            </button>
+                            <button
+                                type="button"
+                                className="gallery__thumbnail-btn"
+                                onClick={() => onSelect(item.id)}
+                                aria-label={`${label} 상세 보기`}
+                            >
+                                <img
+                                    className="gallery__thumbnail"
+                                    src={`data:image/png;base64,${item.image}`}
+                                    alt={label}
+                                />
+                            </button>
+                            <div className="gallery__item-info">
+                                <span className="gallery__item-mode">
+                                    {item.config.mode === 'mandala' ? '🔮 만다라' : `✏️ ${item.config.topic.slice(0, 10)}`}
+                                </span>
+                                <span className="gallery__item-time">
+                                    {formatTime(item.createdAt)}
+                                </span>
+                            </div>
+                        </li>
+                    );
+                })}
+            </ul>
         </div>
     );
 }

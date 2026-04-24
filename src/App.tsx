@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { lazy, Suspense, useState, useCallback, useRef, useEffect } from 'react';
 import { useApiKey } from './hooks/useApiKey';
 import { useGeneration } from './hooks/useGeneration';
 import { useHistory } from './hooks/useHistory';
@@ -18,9 +18,14 @@ import QuickEditBar from './components/Canvas/QuickEditBar';
 import HistoryStack from './components/History/HistoryStack';
 import ExportPanel from './components/Export/ExportPanel';
 import Gallery from './components/Gallery/Gallery';
-import TeacherAuthGate from './components/Classroom/TeacherAuthGate';
-import SessionHost from './components/Classroom/SessionHost';
-import StudentVoteView from './components/Classroom/StudentVoteView';
+
+// Classroom + student modules are lazy-loaded. They pull in Supabase, QRCode,
+// and (transitively, via SessionHost → ClassGallery → classCatalogPdf) the
+// jsPDF + html2canvas catalog export — together ~200 kB of JS that a teacher
+// running in solo mode or a no-classroom session never needs.
+const TeacherAuthGate = lazy(() => import('./components/Classroom/TeacherAuthGate'));
+const SessionHost = lazy(() => import('./components/Classroom/SessionHost'));
+const StudentVoteView = lazy(() => import('./components/Classroom/StudentVoteView'));
 
 import './App.css';
 
@@ -54,6 +59,11 @@ const BOOST_ALREADY_MESSAGE = '이미 적용됨';
 // "선 굵기 보정 중 오류가 발생했습니다."
 const BOOST_ERROR_MESSAGE = '선 굵기 보정 중 오류가 발생했습니다.';
 
+// "학급 모드를 불러오는 중..."
+const CLASSROOM_LOADING_MESSAGE = '학급 모드를 불러오는 중...';
+// "세션을 여는 중..."
+const STUDENT_LOADING_MESSAGE = '세션을 여는 중...';
+
 // Thin adapter component so we can read `user` inside the authed subtree.
 function ClassroomView({
   config,
@@ -79,6 +89,28 @@ function ClassroomView({
       onComplete={onComplete}
       onExit={onExit}
     />
+  );
+}
+
+// Minimal text fallback for lazy-loaded module boundaries. Intentionally does
+// NOT reuse SkeletonLoader — that component expects a specific paper/grid
+// context that classroom routes don't have. A role=status with polite live
+// region is enough for screen readers and visually unobtrusive.
+function LazyFallback({ message }: { message: string }) {
+  return (
+    <div
+      className="app-lazy-fallback"
+      role="status"
+      aria-live="polite"
+      style={{
+        padding: '48px 24px',
+        textAlign: 'center',
+        color: 'var(--text-secondary, #666)',
+        fontSize: '14px',
+      }}
+    >
+      {message}
+    </div>
   );
 }
 
@@ -342,7 +374,11 @@ export default function App() {
   // Student route: render a minimal standalone page. No header, no workspace,
   // no teacher auth. Students do NOT need an API key.
   if (studentCode) {
-    return <StudentVoteView sessionCode={studentCode} />;
+    return (
+      <Suspense fallback={<LazyFallback message={STUDENT_LOADING_MESSAGE} />}>
+        <StudentVoteView sessionCode={studentCode} />
+      </Suspense>
+    );
   }
 
   // Wait for localStorage load
@@ -358,7 +394,11 @@ export default function App() {
             <div className="key-modal" onClick={(e) => e.stopPropagation()}>
               <div className="key-modal__header">
                 <h2>API 키 설정</h2>
-                <button className="key-modal__close" onClick={() => setShowKeySetup(false)}>×</button>
+                <button
+                  className="key-modal__close"
+                  onClick={() => setShowKeySetup(false)}
+                  aria-label="닫기"
+                >×</button>
               </div>
               <ApiKeySetup onKeySet={handleKeySet} />
               <button className="key-modal__logout" onClick={handleLogout}>
@@ -380,15 +420,17 @@ export default function App() {
         <Toast toast={toast} onClose={clearToast} />
         <Header apiKey={apiKey} onSettingsClick={handleSettingsClick} />
         <main className="workspace workspace--classroom">
-          <TeacherAuthGate onBack={handleExitClassroom}>
-            <ClassroomView
-              config={classroomConfig}
-              apiKey={apiKey}
-              onToast={setToast}
-              onComplete={handleClassroomComplete}
-              onExit={handleExitClassroom}
-            />
-          </TeacherAuthGate>
+          <Suspense fallback={<LazyFallback message={CLASSROOM_LOADING_MESSAGE} />}>
+            <TeacherAuthGate onBack={handleExitClassroom}>
+              <ClassroomView
+                config={classroomConfig}
+                apiKey={apiKey}
+                onToast={setToast}
+                onComplete={handleClassroomComplete}
+                onExit={handleExitClassroom}
+              />
+            </TeacherAuthGate>
+          </Suspense>
         </main>
       </div>
     );
@@ -437,7 +479,7 @@ export default function App() {
           {/* Generator/Empty View */}
           {viewMode === 'generator' && !isLoading && (
             <div className="workspace__empty">
-              <div className="workspace__empty-icon">🖌️</div>
+              <div className="workspace__empty-icon" aria-hidden="true">🖌️</div>
               <h2>도안을 생성해 보세요</h2>
               <p>왼쪽 패널에서 모드, 주제, 난이도를 설정한 후<br />"도안 생성" 버튼을 클릭하세요.</p>
             </div>

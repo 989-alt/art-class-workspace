@@ -1,63 +1,160 @@
-📄 PRD: 커스텀 미술 도안 생성기 (AI Art Class Workspace) v1.0
-1. 제품 개요 (Product Overview)
-제품 비전: 교사가 원하는 주제, 난이도, 분할 크기를 입력하면 즉각적으로 수업용 흑백 선화 도안을 생성하고, AI와의 상호작용을 통해 디테일을 완성해 나가는 '개인화된 미술 교보재 워크스페이스'.
+📄 PRD: AI Art Class Workspace v2.0
 
-타겟 유저: 초중고 미술 교사 및 학부모 (PC 웹 환경 한정, 모바일 미지원).
+> v1 → v2 이력: v1.0(서버리스 BYOK 단독) → v2.0(교과서 프리셋 + 학급 모드 + 저작권 보증서 + 학급 전시장)
+> 상세 실행 계획: `art-class-v2-plan.md`
+> 마지막 갱신: 2026-04-24 (Phase 3 완료 시점)
 
-핵심 가치 (Killer Feature): 구글 검색으로는 찾을 수 없는 '맞춤형 종횡비/난이도' 제공 및 '대화형 반복 수정(Quick Edit)'을 통한 도안 최적화.
+---
 
-2. 시스템 아키텍처 (System Architecture)
-프론트엔드: React.js 기반 Serverless SPA (Single Page Application).
+## 1. 제품 개요
 
-인프라: GitHub Pages 호스팅 (서버 유지비 제로).
+**비전**
+교사가 교과서 단원을 고르면 1-클릭으로 수업용 흑백 선화 도안이 나오고, 필요하다면 그 자리에서 학생 20명이 함께 투표·색칠·전시까지 할 수 있는 교실 내 미술 교보재 워크스페이스.
 
-AI 모델: Gemini Nano Banana (텍스트-투-이미지, 이미지 편집, 고해상도 렌더링).
+**타겟 유저**
+- 주 사용자: 초등 미술·담임 교사 (PC 교실 컴퓨터)
+- 보조 사용자: 학생 (QR을 통한 모바일 참여만, PC 접속은 가정하지 않음)
+- 학부모: 가정에서 혼자 사용 시 v1 모드(BYOK 단독)로 동작
 
-데이터 보안: BYOK(Bring Your Own Key) 방식. API 키 및 히스토리 스택은 서버 전송 없이 브라우저 localStorage 및 메모리에서만 관리.
+**핵심 가치**
+1. 교과서 단원과 1:1로 매칭되는 프리셋 — 검색으로는 못 찾는 수업 맞춤 도안
+2. 교탁 1대 + 학생 휴대폰 QR만으로 참여형 수업이 성립
+3. 저작권 보증서·해시·라이선스 자동 기록 — 교사의 공적 활용 안전성 확보
 
-3. 핵심 기능 명세 (Core Features)
-3.1. BYOK 및 온보딩 (API Key Management)
-기능: 사용자가 직접 발급받은 API 키를 입력하여 서비스를 이용.
+---
 
-보안: 입력된 키는 브라우저 내부에만 저장되며, 화면에 평문으로 노출되지 않음 (Masking 처리).
+## 2. 시스템 아키텍처
 
-에러 핸들링: API 키가 없거나 유효하지 않을 경우, 생성을 차단하고 키 설정 페이지로 유도.
+**프론트엔드**: React 19 + Vite + TypeScript, GitHub Pages에 정적 배포.
 
-3.2. 동적 입력 폼 & 안전 필터 (Dynamic Form & Safety)
-모드 선택: * 자유 주제 (협동화/정물화): 교사가 원하는 텍스트를 직접 입력 (예: "사과 바구니").
+**AI 모델**: Gemini Nano Banana (텍스트·이미지 편집·고해상도 렌더링). 호출은 여전히 브라우저→Gemini 직접, 서버 경유 없음.
 
-만다라 모드: 자유 입력 차단, 안전 프리셋 드롭다운(우주, 자연, 꽃, 눈 등) 제공으로 프롬프트 충돌 원천 방지.
+**저장**
+- `localStorage`: API 키, 교사 이름
+- `IndexedDB`: (향후) 프리셋 캐시
+- **Supabase (선택)**: 학급 세션·투표·학생 제출 — 학급 모드에서만 `src/lib/supabaseClient.ts`가 dynamic import로 로드
+- **Supabase Storage**: 학생 색칠본 (24h TTL)
 
-난이도 제어: 하/중/상 3단계. (백그라운드에서 프롬프트 복잡도로 치환됨).
+**인증**
+- 교사: Supabase Auth (이메일·비밀번호)
+- 학생: 익명 토큰 (클라이언트 생성 UUID, `localStorage`)
 
-분할 그리드(NxM) 선택: 교사가 N(가로) x M(세로) 조각 수를 선택하면, AI 모델 요청 시 해당 비율(Aspect Ratio)을 동적 계산하여 반영.
+**보안**
+- BYOK 유지: API 키는 브라우저에만 저장, Supabase에도 업로드 안 함
+- RLS: 세션은 코드로만 읽기 가능, 투표·제출은 본인 토큰 기준
+- 학생 제출물: 기본 비공개(`approved=false`), 교사 승인 후 공개
 
-안전 필터 에러: AI 정책 위반 단어 입력 시 크레딧 차감 없이 "⚠️ 안전 정책 위반" Toast 알림 노출.
+---
 
-3.3. AI 생성 & UI 상태 관리 (Generation & UI State)
-스켈레톤 로딩 (Skeleton UI): 생성 버튼 클릭 시 10~15초의 지연 시간을 보완하기 위해 캔버스 영역에 스켈레톤 UI 노출.
+## 3. 기능 명세
 
-동적 진행 메시지: 로딩 중 "AI가 밑그림을 스케치하는 중..." -> "펜 터치를 다듬는 중..." 형태의 상태 텍스트 전환 애니메이션.
+### 3.1. 공통 기본 (v1 유지)
 
-다중 클릭 방지: 생성 중에는 모든 입력 폼과 버튼 disabled 처리.
+- **BYOK + 마스킹**: 설정 시 `sk-****` 형태로 노출, localStorage 저장, 로그아웃 버튼 제공
+- **모드**: 자유 주제 / 만다라(프리셋 전용) / **교과서 단원(v2 신규)**
+- **난이도**: 하·중·상 → 프롬프트 복잡도 치환
+- **그리드 N×M**: 최대 6×6, 종이 크기(A5~A1·B5~B1) × 방향 2종으로 비율 계산
+- **스켈레톤 UI**: 10~15초 생성 지연을 메시지 전환(스케치→펜→마무리)으로 보완
+- **안전 필터**: 위반 시 크레딧 미차감 + Toast 경고
+- **Quick Edit**: 선 굵게 / 디테일 단순화 / 배경 패턴 칩
+- **히스토리 Undo**: 최대 3단계, 초과 시 오래된 데이터 파기
+- **선 굵기 +20% 자동 보정**: Canvas 기반 후처리, 적용 여부는 갤러리 아이템별로 추적
 
-3.4. Quick Edit & 히스토리 스택 (Iterative Refinement)
-기능: 생성된 도안 하단에 [선 굵게], [디테일 단순화], [배경 패턴 추가] 등의 칩(Chip) 버튼 제공. (Nano Banana의 Image+Text-to-Image 기능 활용).
+### 3.2. 교과서 단원 프리셋 (Phase 1 — 완료)
 
-히스토리 스택 (Undo): * OOM(Out of Memory) 방지를 위해 최대 저장 깊이(Max Depth)는 3회로 제한.
+- `src/data/curriculumPresets.ts`에 10종 레코드
+- 필드: `grade` · `semester` · `subject` · `unitTitle` · `unitCode` · `suggestedTopics` · `basePrompt` · `styleDirective` · 기본 그리드·용지·방향 · `teachingNote` · `learningObjectives`
+- `CurriculumPresetPicker.tsx`: 학년·교과 필터 → 카드 선택 → 세부 주제 칩 선택
+- `services/promptBuilder.ts`의 `buildPromptFromPreset()`으로 프롬프트 합성
 
-3회를 초과하면 가장 오래된 이미지 데이터 파기.
+### 3.3. 인쇄 엔진 (Phase 1 — 완료)
 
-[↩️ 이전으로 되돌리기] 버튼을 통해 즉각적인 롤백 지원.
+- **워터마크**: 하단 중앙 `SEONBI's Art Class · Gemini · YYYY-MM-DD HH:mm` (Gray #999 6pt)
+- **색약 시뮬 프리뷰**: `CanvasPreview.tsx` 상단 탭 — 정상 / D / P / T 4종
+- **저작권 보증서**: `utils/copyrightCertificate.ts`
+  - SHA-256(base64 이미지 + 프롬프트 + 생성일시)
+  - PDF 마지막 페이지에 단원·프롬프트·AI 모델·교사명·라이선스·해시·진위 확인 QR
+  - ExportPanel에서 On/Off 토글 가능
 
-과금 투명성 고지: 수정 UI 상단에 붉은색 텍스트로 "⚠️ 빠른 수정 기능은 추가 API 크레딧을 소모합니다." 명시.
+### 3.4. 학급 모드 (Phase 2 — 완료)
 
-3.5. 벡터화 및 무여백 PDF 출력 (Export Module)
-해상도 한계 돌파: 생성된 Raster 이미지를 다운로드 직전 프론트엔드(imagetracerjs 등)에서 SVG(Vector)로 변환하여 선 깨짐 방지.
+- **세션 생성**: 교사가 프리셋 + 투표 후보 편집 → 6자리 코드 + QR 1초 이내 표시
+- **학생 경로**: `/session/ABC123` — App.tsx의 regex가 감지해 `StudentVoteView` 렌더
+- **투표 항목**: 키워드(프리셋 suggestedTopics에서 시드) / 선 굵기 / 디테일 — 각각 단일 선택
+- **실시간 대시보드**: `useClassroomSession` 훅이 Supabase Realtime 구독, `VoteDashboard`에 집계
+- **도안 생성**: `voteToPrompt.ts`가 다수결 → `composeVotedPrompt()` → Gemini 호출 → 완성본을 세션에 저장 + 학생에게 broadcast
+- **롤백**: 생성 실패 시 `reopenSession()`으로 투표 상태 복원
+- **오프라인 Fallback**: Supabase 미설정/연결 실패 시 "학급 모드 비활성화" 안내 + v1 단독 동작
 
-분할 및 출력: 선택된 N x M 그리드에 맞춰 수학적으로 캔버스를 자른 뒤, jsPDF를 활용해 A4 사이즈(210x297mm) (x:0, y:0) 좌표에 여백 없이 삽입하여 다중 페이지 PDF로 다운로드 제공.
+### 3.5. 학급 전시장 (Phase 3 — 완료)
 
-4. 비기능 요구사항 (Non-Functional Requirements)
-성능 (Performance): 히스토리 스택의 Base64 이미지 데이터는 최대 3개로 유지하여 브라우저 메모리 20MB 이하 점유 보장.
+- **학생 업로드**: `StudentSubmitPanel.tsx` — 사진 파일 선택 → Storage 업로드, 기본 비공개
+- **교사 검수**: `TeacherReviewPanel.tsx` — 썸네일 그리드에서 승인/해제 토글
+- **전시 그리드**: `ClassGallery.tsx` — 승인된 작품만 표시, 닉네임 캡션
+- **TV 모드**: 전체화면 슬라이드쇼 (6초 전환), 키보드 ←→ Space Esc, 포커스 복귀 (WCAG 다이얼로그 패턴)
+- **카탈로그 PDF**: `classCatalogPdf.ts` — 표지(단원·세션 코드·교사·날짜) + 4컷 그리드 페이지
 
-호환성 (Compatibility): 모바일 브라우저 대응 제외. 최신 Chrome, Edge, Safari (PC 버전) 기준 최적화.
+### 3.6. 성능 · 접근성 (Phase 3 Task 9 — 완료)
+
+- **Lazy-load**: `TeacherAuthGate`·`SessionHost`·`StudentVoteView`·`StudentSubmitPanel`을 `React.lazy()`로 분리
+- **접근성 AA**:
+  - 모든 클릭 요소가 네이티브 `<button>` 또는 적절한 `role`
+  - 데코레이티브 이모지는 `aria-hidden="true"`
+  - Toast는 `role="status"` · 오류는 `role="alert"` + `aria-live`
+  - 슬라이드쇼는 `role="dialog" aria-modal="true"` + 포커스 복귀
+  - 포커스 가시성 유지 (`index.css`의 `:not(:focus-visible)` 예외)
+
+---
+
+## 4. 비기능 요구사항
+
+| 항목 | 목표 | 달성 수단 |
+|---|---|---|
+| 생성 체감 시간 | < 15초 | 스켈레톤 + 메시지 전환 |
+| 히스토리 메모리 | < 20MB | 3단 최대, base64만 보관 |
+| 학생 20명 동시 투표 | 집계 지연 < 2초 | Supabase Realtime |
+| 학급 갤러리 로딩 | < 1초 | 썸네일 lazy-load, Supabase URL 직결 |
+| Lighthouse 성능 | ≥ 90 (BYOK 단독 페이지) | 학급 모듈 lazy-load |
+| Lighthouse 접근성 | ≥ 95 | WCAG AA 패스 |
+| 호환성 | 최신 Chrome/Edge/Safari (PC), 학생 경로만 모바일 |
+
+---
+
+## 5. 출시 게이트 체크 (v2.0 기준)
+
+### Phase 1 — 제안서 제출 (완료)
+- [x] 프리셋 10종 → 생성 → 보증서 포함 PDF
+- [x] 색약 프리뷰 3종
+- [x] 워터마크 On/Off
+- [x] v1 회귀 없음
+
+### Phase 2 — MVP (완료)
+- [x] 세션 생성 → QR ≤ 1초
+- [x] 학생 20명 동시, 대시보드 지연 ≤ 2초
+- [x] Supabase 차단 시 안내 + 로컬 모드 동작
+
+### Phase 3 — 정식 (완료)
+- [x] 학생 20명 제출 → 갤러리 로딩 ≤ 1초 (Storage 직결 URL)
+- [x] 24시간 자동 삭제 (`cleanup_expired_sessions` SQL 함수 + `expires_at` 기본값)
+- [x] 접근성 AA 패스 — 수동 audit + 포커스·대체 텍스트 보강
+- [x] README·PRD 업데이트
+- [x] QA 체크리스트 문서화 (`docs/QA_CHECKLIST.md`)
+
+---
+
+## 6. 알려진 제약
+
+- **메인 번들 1.2MB**: @google/genai SDK가 대부분을 차지. 추가 축소는 SDK 트리셰이킹 개선(업스트림) 또는 이미지 생성 전용 경로 분리가 필요 — v2.1 과제.
+- **Supabase 무료 티어**: 교실 1~2개 동시 기준 설계. 학교 단위 배포 시 유료 플랜 필요.
+- **학교 Wi-Fi 방화벽**: Supabase 차단 시 학급 모드 사용 불가. v1 단독 모드로 Fallback 정책 유지.
+- **초상권**: 학생 얼굴이 포함된 이미지 업로드는 기본 차단하지 않지만 교사 승인 단계에서 필터링 책임.
+
+---
+
+## 7. 향후 과제 (v2.1 이후)
+
+- Service Worker + 단원 프리셋 오프라인 캐시
+- 번들 분리 심화: Gemini SDK를 생성 경로에서만 dynamic import
+- 교사 대시보드: 반별 사용 통계, 생성된 도안 아카이브
+- PWA 설치 유도 (학생 경로용)
+- 접근성 강화: 스크린리더 전용 상태 업데이트, 고대비 모드
