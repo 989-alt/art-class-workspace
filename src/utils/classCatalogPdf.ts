@@ -3,12 +3,13 @@ import { jsPDF } from 'jspdf';
 export interface CatalogItem {
     imageUrl: string;
     nickname: string | null;
+    /** v3: parent assignment title shown in tile caption + cover. */
+    assignmentTitle: string;
 }
 
 export interface CatalogMeta {
-    unitTitle: string;
-    unitCode: string;
-    sessionCode: string;
+    classroomName: string;
+    classroomCode: string;
     teacherName?: string | null;
     generatedAt?: Date;
 }
@@ -26,15 +27,16 @@ const MARGIN_BOTTOM = 14;
 const COLS = 2;
 const ROWS = 3;
 const GAP = 8;
-const NICK_ROW_HEIGHT = 8; // mm — reserved at the bottom of each tile for the nickname
+// mm reserved at the bottom of each tile for the nickname + assignment caption
+const NICK_ROW_HEIGHT = 11;
 
 const ANON_LABEL = '익명'; // "익명"
 
 /**
- * Generate an A4-portrait class catalog PDF:
- *  - cover page with unit title / unit code / session code / teacher name /
+ * Generate an A4-portrait class catalog PDF for v3 (classroom-scoped):
+ *  - cover page with classroom name / classroom code / teacher (optional) /
  *    approved count / generated-at date
- *  - body: 2x3 grid per page, each tile = image + nickname
+ *  - body: 2x3 grid per page, each tile = image + nickname + assignment title
  *
  * Images are loaded through an offscreen canvas with crossOrigin="anonymous"
  * so jsPDF can embed them. If a single image fails (CORS, 404, network), the
@@ -66,15 +68,12 @@ export async function exportClassCatalog(
         for (let pg = 0; pg < pageCount; pg++) {
             doc.addPage('a4', 'portrait');
 
-            // Page header — unit title on top for context.
+            // Page header — classroom name on top for context.
             doc.setTextColor(90);
             doc.setFontSize(9);
-            doc.text(
-                `${meta.unitCode}  ·  ${meta.unitTitle}`,
-                PAGE_W / 2,
-                MARGIN_TOP - 6,
-                { align: 'center' }
-            );
+            doc.text(meta.classroomName, PAGE_W / 2, MARGIN_TOP - 6, {
+                align: 'center',
+            });
 
             for (let i = 0; i < perPage; i++) {
                 const idx = pg * perPage + i;
@@ -91,6 +90,7 @@ export async function exportClassCatalog(
                     tileH,
                     prepared[idx],
                     items[idx].nickname,
+                    items[idx].assignmentTitle,
                     idx + 1
                 );
             }
@@ -160,6 +160,7 @@ function drawTile(
     h: number,
     tile: LoadedTile | null,
     nickname: string | null,
+    assignmentTitle: string,
     index: number
 ): void {
     const imageAreaH = h - NICK_ROW_HEIGHT;
@@ -188,15 +189,24 @@ function drawTile(
         drawPlaceholder(doc, x, y, w, imageAreaH);
     }
 
-    // Nickname row — centered, ellipsized.
+    // Caption block — nickname (line 1) + assignment title (line 2).
     const label = nickname && nickname.trim().length > 0 ? nickname : ANON_LABEL;
     doc.setDrawColor(235);
     doc.line(x + 2, y + imageAreaH, x + w - 2, y + imageAreaH);
+
     doc.setTextColor(50);
     doc.setFontSize(10);
-    const maxWidth = w - 12;
-    const safe = ellipsize(doc, label, maxWidth);
-    doc.text(safe, x + w / 2, y + h - 3, { align: 'center' });
+    const maxNickW = w - 12;
+    const safeNick = ellipsize(doc, label, maxNickW);
+    doc.text(safeNick, x + w / 2, y + imageAreaH + 4.5, { align: 'center' });
+
+    if (assignmentTitle && assignmentTitle.trim().length > 0) {
+        doc.setTextColor(140);
+        doc.setFontSize(8);
+        const maxTitleW = w - 6;
+        const safeTitle = ellipsize(doc, assignmentTitle, maxTitleW);
+        doc.text(safeTitle, x + w / 2, y + imageAreaH + 9, { align: 'center' });
+    }
 
     // Index badge top-left for print catalog reference.
     doc.setTextColor(170);
@@ -230,23 +240,20 @@ function drawCoverPage(
     doc.setLineWidth(0.4);
     doc.line(PAGE_W / 2 - 30, 68, PAGE_W / 2 + 30, 68);
 
-    // Unit info block.
-    doc.setTextColor(110);
-    doc.setFontSize(11);
-    doc.text(meta.unitCode, PAGE_W / 2, 90, { align: 'center' });
+    // Classroom block.
     doc.setTextColor(30);
     doc.setFontSize(20);
-    doc.text(meta.unitTitle, PAGE_W / 2, 100, { align: 'center' });
+    doc.text(meta.classroomName, PAGE_W / 2, 92, { align: 'center' });
 
     // Facts grid — two columns.
     const leftLabelX = 60;
     const rightValueX = PAGE_W - 60;
-    const rowY = 140;
+    const rowY = 130;
     const gap = 10;
     doc.setFontSize(11);
 
     const rows: Array<[string, string]> = [
-        ['세션 코드', meta.sessionCode], // "세션 코드"
+        ['학급 코드', meta.classroomCode], // "학급 코드"
         ['승인 작품 수', `${approvedCount}`], // "승인 작품 수"
         ['생성일', formatDateKorean(generatedAt)], // "생성일"
     ];

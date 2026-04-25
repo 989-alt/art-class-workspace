@@ -1,5 +1,5 @@
 .review-panel {
-    margin-top: 24px;
+    margin-top: 0;
     padding: 20px;
     background: var(--bg-card, #FFFEFB);
     border: 1px solid var(--border-subtle, rgba(45, 41, 38, 0.06));
@@ -10,12 +10,30 @@
     gap: 16px;
 }
 
-.review-panel__header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
+.review-panel__topbar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
     gap: 12px;
-    flex-wrap: wrap;
+}
+
+.review-panel__back {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-light, rgba(45, 41, 38, 0.12));
+    background: #fff;
+    color: var(--text-primary, #2D2926);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.review-panel__back:hover {
+    background: rgba(193, 127, 89, 0.08);
+    border-color: var(--primary, #C17F59);
 }
 
 .review-panel__title {
@@ -23,6 +41,9 @@
     font-weight: 700;
     color: var(--text-primary, #2D2926);
     margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .review-panel__counter {
@@ -30,6 +51,7 @@
     font-weight: 600;
     color: var(--text-secondary, #8B8582);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 .review-panel__hint {
@@ -177,4 +199,16 @@
     color: #A66B47;
     background: rgba(193, 127, 89, 0.08);
     border-radius: var(--radius-sm, 6px);
+}
+
+@media (max-width: 540px) {
+    .review-panel__topbar {
+        grid-template-columns: 1fr;
+    }
+    .review-panel__title {
+        white-space: normal;
+    }
+    .review-panel__counter {
+        justify-self: start;
+    }
 }

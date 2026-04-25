@@ -3,6 +3,8 @@ import QRCode from 'qrcode';
 import { useClassroom } from '../../hooks/useClassroom';
 import { useAssignments } from '../../hooks/useAssignments';
 import type { Assignment } from '../../types/classroom';
+import TeacherReviewPanel from './TeacherReviewPanel';
+import ClassGallery from './ClassGallery';
 import './ClassroomPanel.css';
 
 interface ClassroomPanelProps {
@@ -34,16 +36,19 @@ const L = {
     copyUrl: 'URL 복사',
     copied: '복사되었습니다',
     studentUrlLabel: '학생 접속 주소',
+    openGalleryCta: '🎨 학급 전시장 열기',
+    galleryHint: '학급 전체에서 승인된 작품을 한 화면에서 모아 봅니다.',
     assignmentsTitle: '과제',
     assignmentsLoading: '과제를 불러오는 중...',
     assignmentsError: '과제를 불러오지 못했습니다.',
     assignmentsEmpty:
         '아직 과제가 없습니다. 도안을 만들고 결과 화면에서 ‘우리 학급에 게시’를 눌러 보세요.',
+    assignmentClickHint: '과제 카드를 누르면 학생 제출을 검수할 수 있어요.',
     assignmentDelete: '삭제',
-    assignmentDeleteConfirm: '이 과제를 삭제하시겠어요? 학생 제출은 함께 사라질 수 있습니다.',
+    assignmentDeleteConfirm:
+        '이 과제를 삭제하시겠어요? 학생 제출은 함께 사라질 수 있습니다.',
     assignmentThumbAlt: '과제 썸네일',
-    galleryTitle: '전시장',
-    galleryEmpty: '아직 승인된 작품이 없습니다.',
+    assignmentOpenAria: '과제 검수 열기',
 };
 
 function buildStudentUrl(code: string): string {
@@ -73,33 +78,54 @@ function formatCreatedAt(iso: string): string {
 
 interface AssignmentRowProps {
     assignment: Assignment;
+    onOpen: (assignment: Assignment) => void;
     onDelete: (id: string) => void;
     isDeleting: boolean;
 }
 
-function AssignmentRow({ assignment, onDelete, isDeleting }: AssignmentRowProps) {
-    const handleDelete = () => {
+function AssignmentRow({
+    assignment,
+    onOpen,
+    onDelete,
+    isDeleting,
+}: AssignmentRowProps) {
+    const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+        // Stop propagation so the row's open handler doesn't also fire.
+        e.stopPropagation();
         if (isDeleting) return;
         if (window.confirm(L.assignmentDeleteConfirm)) {
             onDelete(assignment.id);
         }
     };
+    const handleOpen = () => {
+        if (isDeleting) return;
+        onOpen(assignment);
+    };
     return (
         <li className="classroom-panel__assignment">
-            <div className="classroom-panel__assignment-thumb-wrap">
-                <img
-                    className="classroom-panel__assignment-thumb"
-                    src={assignment.image_url}
-                    alt={L.assignmentThumbAlt}
-                    loading="lazy"
-                />
-            </div>
-            <div className="classroom-panel__assignment-meta">
-                <span className="classroom-panel__assignment-title">{assignment.title}</span>
-                <span className="classroom-panel__assignment-date">
-                    {formatCreatedAt(assignment.created_at)}
-                </span>
-            </div>
+            <button
+                type="button"
+                className="classroom-panel__assignment-open"
+                onClick={handleOpen}
+                aria-label={`${assignment.title} ${L.assignmentOpenAria}`}
+            >
+                <div className="classroom-panel__assignment-thumb-wrap">
+                    <img
+                        className="classroom-panel__assignment-thumb"
+                        src={assignment.image_url}
+                        alt={L.assignmentThumbAlt}
+                        loading="lazy"
+                    />
+                </div>
+                <div className="classroom-panel__assignment-meta">
+                    <span className="classroom-panel__assignment-title">
+                        {assignment.title}
+                    </span>
+                    <span className="classroom-panel__assignment-date">
+                        {formatCreatedAt(assignment.created_at)}
+                    </span>
+                </div>
+            </button>
             <button
                 type="button"
                 className="classroom-panel__assignment-delete"
@@ -138,6 +164,12 @@ export default function ClassroomPanel({ onBack }: ClassroomPanelProps) {
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
+    // T5: nested views — review (per assignment) and class-wide gallery.
+    const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(
+        null
+    );
+    const [showGallery, setShowGallery] = useState(false);
+
     const studentUrl = useMemo(
         () => (classroom ? buildStudentUrl(classroom.code) : ''),
         [classroom]
@@ -170,6 +202,16 @@ export default function ClassroomPanel({ onBack }: ClassroomPanelProps) {
         const t = window.setTimeout(() => setCopyNotice(null), 1600);
         return () => window.clearTimeout(t);
     }, [copyNotice]);
+
+    // If the selected assignment was deleted (e.g. another tab), drop the
+    // detail view back to the overview so we don't render a stale review.
+    useEffect(() => {
+        if (!selectedAssignment) return;
+        const stillExists = assignments.some((a) => a.id === selectedAssignment.id);
+        if (!stillExists && !assignmentsLoading) {
+            setSelectedAssignment(null);
+        }
+    }, [assignments, assignmentsLoading, selectedAssignment]);
 
     const handleCreate = async (e: FormEvent) => {
         e.preventDefault();
@@ -240,6 +282,45 @@ export default function ClassroomPanel({ onBack }: ClassroomPanelProps) {
             setDeletingId(null);
         }
     };
+
+    // ---- Nested view dispatch ---------------------------------------------
+
+    if (classroom && selectedAssignment) {
+        return (
+            <div className="classroom-panel">
+                <div className="classroom-panel__topbar">
+                    <button className="classroom-panel__back" onClick={onBack}>
+                        {L.backToGenerator}
+                    </button>
+                    <h1 className="classroom-panel__title">{L.title}</h1>
+                </div>
+                <TeacherReviewPanel
+                    assignmentId={selectedAssignment.id}
+                    assignmentTitle={selectedAssignment.title}
+                    onBack={() => setSelectedAssignment(null)}
+                />
+            </div>
+        );
+    }
+
+    if (classroom && showGallery) {
+        return (
+            <div className="classroom-panel">
+                <div className="classroom-panel__topbar">
+                    <button className="classroom-panel__back" onClick={onBack}>
+                        {L.backToGenerator}
+                    </button>
+                    <h1 className="classroom-panel__title">{L.title}</h1>
+                </div>
+                <ClassGallery
+                    classroomId={classroom.id}
+                    classroomName={classroom.name}
+                    classroomCode={classroom.code}
+                    onBack={() => setShowGallery(false)}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="classroom-panel">
@@ -339,6 +420,19 @@ export default function ClassroomPanel({ onBack }: ClassroomPanelProps) {
                                 )}
                             </form>
                         )}
+
+                        <div className="classroom-panel__gallery-cta-row">
+                            <button
+                                type="button"
+                                className="classroom-panel__gallery-cta"
+                                onClick={() => setShowGallery(true)}
+                            >
+                                {L.openGalleryCta}
+                            </button>
+                            <span className="classroom-panel__gallery-cta-hint">
+                                {L.galleryHint}
+                            </span>
+                        </div>
                     </section>
 
                     <section className="classroom-panel__qr-card">
@@ -408,27 +502,27 @@ export default function ClassroomPanel({ onBack }: ClassroomPanelProps) {
                         )}
 
                         {!assignmentsLoading && assignments.length > 0 && (
-                            <ul className="classroom-panel__assignment-list">
-                                {assignments.map((a) => (
-                                    <AssignmentRow
-                                        key={a.id}
-                                        assignment={a}
-                                        onDelete={handleAssignmentDelete}
-                                        isDeleting={deletingId === a.id}
-                                    />
-                                ))}
-                            </ul>
+                            <>
+                                <p className="classroom-panel__assignment-hint">
+                                    {L.assignmentClickHint}
+                                </p>
+                                <ul className="classroom-panel__assignment-list">
+                                    {assignments.map((a) => (
+                                        <AssignmentRow
+                                            key={a.id}
+                                            assignment={a}
+                                            onOpen={(picked) => setSelectedAssignment(picked)}
+                                            onDelete={handleAssignmentDelete}
+                                            isDeleting={deletingId === a.id}
+                                        />
+                                    ))}
+                                </ul>
+                            </>
                         )}
 
                         {deleteError && (
                             <p className="classroom-panel__error">{deleteError}</p>
                         )}
-                    </section>
-
-                    <section className="classroom-panel__gallery">
-                        <h2 className="classroom-panel__section-title">{L.galleryTitle}</h2>
-                        {/* Placeholder for v3-T5. */}
-                        <p className="classroom-panel__placeholder">{L.galleryEmpty}</p>
                     </section>
                 </div>
             )}

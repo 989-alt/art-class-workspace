@@ -1,5 +1,5 @@
 .class-gallery {
-    margin-top: 24px;
+    margin-top: 0;
     padding: 20px;
     background: var(--bg-card, #FFFEFB);
     border: 1px solid var(--border-subtle, rgba(45, 41, 38, 0.06));
@@ -18,6 +18,32 @@
     flex-wrap: wrap;
 }
 
+.class-gallery__header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.class-gallery__back {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-light, rgba(45, 41, 38, 0.12));
+    background: #fff;
+    color: var(--text-primary, #2D2926);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.class-gallery__back:hover {
+    background: rgba(193, 127, 89, 0.08);
+    border-color: var(--primary, #C17F59);
+}
+
 .class-gallery__title {
     font-size: 16px;
     font-weight: 700;
@@ -32,6 +58,12 @@
     flex-wrap: wrap;
 }
 
+.class-gallery__meta-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary, #8B8582);
+}
+
 .class-gallery__meta-code {
     font-size: 11px;
     font-weight: 700;
@@ -41,12 +73,7 @@
     padding: 2px 6px;
     background: rgba(193, 127, 89, 0.1);
     border-radius: 4px;
-}
-
-.class-gallery__meta-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary, #8B8582);
+    font-variant-numeric: tabular-nums;
 }
 
 .class-gallery__toolbar {
@@ -141,7 +168,7 @@
 .class-gallery__item {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .class-gallery__frame {
@@ -164,6 +191,16 @@
     font-size: 12px;
     font-weight: 600;
     color: var(--text-primary, #2D2926);
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 2px;
+}
+
+.class-gallery__assignment {
+    font-size: 11px;
+    color: var(--text-secondary, #8B8582);
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -261,6 +298,11 @@
     letter-spacing: 0.3px;
 }
 
+.gallery-slideshow__assignment {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
 .gallery-slideshow__counter {
     font-size: 14px;
     color: rgba(255, 255, 255, 0.65);
@@ -316,5 +358,8 @@
     }
     .gallery-slideshow__nick {
         font-size: 20px;
+    }
+    .gallery-slideshow__assignment {
+        font-size: 13px;
     }
 }
