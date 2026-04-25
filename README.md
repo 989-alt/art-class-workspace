@@ -1,72 +1,69 @@
-# AI Art Class Workspace v2.0
+# AI Art Class Workspace v3
 
-교사가 원하는 주제·난이도·분할 크기로 즉시 수업용 흑백 선화 도안을 만들고, 교과서 단원 프리셋·학급 투표·실시간 협업·저작권 보증서까지 한 화면에서 처리하는 React SPA입니다.
+초등 미술 수업을 위한 LMS형 AI 도안 워크스페이스.
+교사가 도안을 만들어 학급에 게시하고, 학생이 QR로 입장해 도안을 받아 색칠한 뒤 작품을 제출하면, 교사 승인 후 학급 전시장에 누적되는 한 학기 단위 LMS.
 
-- **AI**: Gemini Nano Banana (BYOK — 각 교사의 API 키가 브라우저에만 저장됨)
+- **AI**: Gemini Nano Banana (BYOK — 교사 본인의 API 키가 브라우저에만 저장됨)
 - **호스팅**: GitHub Pages (완전 정적)
-- **선택적 백엔드**: Supabase (학급 모드에서만 로드)
-- **상태**: Phase 3 완료 — v2.0 정식 출시 준비 (Task 1~9)
+- **선택 백엔드**: Supabase (학급 LMS 모드를 켤 때만 로드)
+- **상태**: v3.0 — 1교사 1학급 영구 보관 LMS
 
 ---
 
-## 기능 한눈에 보기
+## 핵심 기능
 
-### v1에서 유지되는 핵심
-- BYOK(Bring Your Own Key) + API 키 마스킹 · 로컬 저장
-- 자유 주제 / 만다라 모드, 난이도 3단계
-- N×M 그리드 자동 비율 계산
-- Quick Edit (선 굵게, 디테일 단순화 등) + 3단 히스토리 Undo
-- SVG 벡터화 · jsPDF 무여백 분할 출력
-- 다중 생성 + 갤러리 + ZIP 일괄 다운로드
-- 선 굵기 +20% 자동 보정 (색약·인쇄 대비)
-
-### v2.0에서 새로 추가된 것
-- **교과서 단원 프리셋 10종** (`src/data/curriculumPresets.ts`) — 학년·교과·단원 기반 1-클릭 세팅
-- **워터마크 + 색약 프리뷰** — Deuteranopia·Protanopia·Tritanopia 3종 Canvas 변환
-- **저작권 보증서 PDF** — 생성일시·프롬프트·AI 모델·SHA-256 해시·진위 확인 QR을 마지막 페이지에 자동 삽입
-- **학급 세션(옵션)** — Supabase 연결 시 활성화
-  - 교사: 6자리 코드 + QR → 실시간 투표 집계 대시보드 → 다수결 프롬프트 → Gemini 호출
-  - 학생: `/session/ABC123` 모바일 웹뷰 — 키워드·선 굵기·디테일 투표
-  - 학생 20명 동시 처리 · 24시간 자동 세션 만료
-- **학급 전시장** — 학생이 색칠본 업로드 → 교사 검수(승인제) → 전시장 그리드 뷰 → TV 모드 전체화면 슬라이드쇼 → 학급 카탈로그 PDF 출력
+- **BYOK Gemini API** — 브라우저 → Gemini 직접 호출. 키는 `localStorage`에만 저장되며 어떤 서버에도 전송되지 않습니다.
+- **3가지 도안 모드** — 자유 주제 / 만다라 / 교과서 단원 프리셋 10종.
+- **N×M 그리드 분할 인쇄용 PDF** — A5~A1, B5~B1 종이 크기 + 가로/세로 방향 자동 비율 계산.
+- **SVG 벡터화 + ZIP 일괄 다운로드** — 다중 생성 결과를 한 번에 받기.
+- **선 굵기 +20% 수동 보정** — 인쇄 시 가독성을 위한 후처리. 적용 여부는 결과별로 추적.
+- **학급 모드 (LMS)**
+  - 1교사 1학급, 6자리 학급 코드 + QR은 학급 생성 시 1회 발급되고 영구 유지
+  - 학생은 별도 계정 없이 QR/코드 + 닉네임으로 즉시 입장 (개인정보 미수집)
+  - 교사가 도안을 학급에 과제로 게시 → 학생이 PNG 다운로드 → 색칠본 사진 업로드 → 교사 승인
+  - 학급 전시장 그리드 + TV 모드 풀스크린 슬라이드쇼 + 학급 카탈로그 PDF
+  - 학습 결과는 영구 보관 (TTL 없음)
 
 ---
 
 ## 빠른 시작
 
-### 1. 의존성 설치 & 실행
-
 ```bash
 npm install
-npm run dev       # Vite dev server (http://localhost:5173)
-npm run build     # tsc -b && vite build → dist/
-npm run lint      # ESLint (eslint.config.js 기반)
-npm run preview   # 빌드 결과 로컬 프리뷰
+npm run dev          # http://localhost:5173 의 Vite dev server
+npm run build        # tsc -b && vite build → dist/
+npm run lint         # ESLint
+npm run preview      # 빌드 결과 로컬 프리뷰
 ```
 
-### 2. Gemini API 키 발급 (모든 사용자 필수)
+1. https://aistudio.google.com/apikey 에서 Gemini API 키 발급
+2. 앱 첫 화면에 키 붙여넣기 → "시작하기"
+3. 도안 생성 → 출력 또는 학급에 게시
 
-1. https://aistudio.google.com/apikey 접속
-2. "Create API key" 클릭 → 복사
-3. 앱 첫 화면의 입력란에 붙여넣기 → "시작하기"
+학급 모드를 사용하지 않는 1인 사용자는 여기서 끝납니다. Supabase 설정 없이 도안 생성, SVG 벡터화, PDF 분할 출력 모두 정상 동작합니다.
 
-키는 브라우저 `localStorage`에만 저장됩니다. 서버로 전송되지 않습니다.
+### 학급 모드를 쓰려면 (선택)
 
-### 3. 학급 모드를 쓰려면 (선택)
+Supabase 무료 프로젝트 1개와 5분 정도의 셋업이 필요합니다. 자세한 절차는 [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md) 참고.
 
-`SUPABASE_SETUP.md`를 따라 Supabase 프로젝트를 연결하세요. 연결하지 않아도 나머지 기능(도안 생성·편집·PDF·보증서)은 전부 동작합니다.
+대략 흐름:
 
-필요한 것:
+1. Supabase 프로젝트 생성 → Project URL, anon key를 `.env.local`에 작성
+2. `supabase/migrations/0001 ~ 0004` 를 SQL Editor에서 순서대로 실행 (`0005`는 주석 메모)
+3. Storage에 `classroom-assets`, `classroom-submissions` 두 개의 **public** 버킷 생성
+4. Authentication에서 교사 계정 1개 생성
 
-프로젝트 루트에 `.env.local` 파일을 새로 만들고 아래 두 값을 채워 넣으세요:
+---
 
-```bash
-# .env.local  ← git에 올라가지 않는 로컬 파일
-VITE_SUPABASE_URL=https://xxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbG...
-```
+## 기술 스택
 
-`supabase/migrations/0001_classroom_sessions.sql` ~ `0007_fix_submission_rls.sql`을 SQL Editor에서 순서대로 실행하고, Storage에 `classroom-submissions` 퍼블릭 버킷을 만드세요. 상세 단계는 `SUPABASE_SETUP.md` 참고.
+- **프론트엔드**: React 19 + Vite + TypeScript
+- **AI**: `@google/genai` (Gemini Nano Banana, BYOK)
+- **백엔드 (선택)**: Supabase (Auth · Postgres + RLS · Realtime · Storage)
+- **PDF**: `jspdf` (분할 인쇄 + 학급 카탈로그)
+- **벡터화**: `imagetracerjs`
+- **ZIP**: `jszip`
+- **QR**: `qrcode`
 
 ---
 
@@ -74,87 +71,56 @@ VITE_SUPABASE_ANON_KEY=eyJhbG...
 
 ```
 src/
-├─ App.tsx                       # 라우팅(정규식 기반) + 화면 전환
+├─ App.tsx                            # 해시 라우터 (#/class/:code) + 화면 전환
 ├─ components/
-│  ├─ Classroom/                 # 학급 모드 — lazy-load
-│  │   ├─ TeacherAuthGate.tsx    # 교사 로그인 (Supabase Auth)
-│  │   ├─ SessionHost.tsx        # 세션 코드·QR·실시간 대시보드
-│  │   ├─ StudentVoteView.tsx    # /session/:code 학생 웹뷰
-│  │   ├─ StudentSubmitPanel.tsx # 학생 색칠본 업로드
-│  │   ├─ TeacherReviewPanel.tsx # 교사 검수(승인제)
-│  │   └─ ClassGallery.tsx       # 전시장 + TV 모드 + 카탈로그 PDF
-│  ├─ Form/CurriculumPresetPicker.tsx  # 교과서 단원 3번째 탭
-│  ├─ Export/ExportPanel.tsx     # PNG/SVG/PDF + 워터마크·보증서 토글
-│  └─ Canvas/CanvasPreview.tsx   # 색약 시뮬 프리뷰
-├─ data/curriculumPresets.ts     # 10종 프리셋 레코드
-├─ services/
-│  ├─ geminiService.ts           # Gemini Nano Banana 호출
-│  ├─ promptBuilder.ts           # 프리셋 → 프롬프트
-│  └─ voteToPrompt.ts            # 투표 집계 → 프롬프트
-├─ utils/
-│  ├─ pdfExporter.ts             # jsPDF 분할 + 워터마크 + 보증서
-│  ├─ copyrightCertificate.ts    # 메타데이터·SHA-256·QR
-│  ├─ classCatalogPdf.ts         # 학급 카탈로그 PDF
-│  └─ vectorizer.ts              # imagetracerjs 래퍼
-├─ lib/supabaseClient.ts         # dynamic import (번들 분리)
+│  ├─ Classroom/                      # 학급 LMS — 진입 시 lazy-load
+│  │   ├─ TeacherAuthGate.tsx         # 교사 로그인 (Supabase Auth)
+│  │   ├─ ClassroomPanel.tsx          # "내 학급" — 학급 CRUD + QR/코드 + 과제 리스트
+│  │   ├─ PublishAssignmentDialog.tsx # 결과 → 과제로 게시
+│  │   ├─ StudentClassView.tsx        # #/class/:code 학생 진입
+│  │   ├─ StudentSubmitPanel.tsx      # 학생 작품 업로드
+│  │   ├─ TeacherReviewPanel.tsx      # 교사 검수 (승인 토글)
+│  │   └─ ClassGallery.tsx            # 전시장 + TV 모드 + 카탈로그 PDF
+│  ├─ Form/                           # 도안 입력 (자유/만다라/교과서)
+│  ├─ Canvas/                         # 결과 프리뷰
+│  ├─ Export/                         # PNG/SVG/PDF 다운로드
+│  └─ Gallery/                        # 다중 생성 갤러리
+├─ data/curriculumPresets.ts          # 교과서 단원 프리셋 10종
+├─ services/                          # Gemini 호출 + 프롬프트 빌더
+├─ hooks/                             # useClassroom, useAssignments, useTeacherReview …
+├─ utils/                             # pdfExporter, vectorizer, classCatalogPdf …
+├─ lib/supabaseClient.ts              # dynamic import (학급 모드에서만 로드)
 └─ types/
 
 supabase/
-└─ migrations/                   # 0001~0007 스키마 + RLS + Storage
+└─ migrations/                        # 0001~0005 신규 LMS 스키마
 
 docs/
-└─ QA_CHECKLIST.md               # 수동 E2E 체크리스트 (Phase 3 출시 기준)
+└─ QA_CHECKLIST.md                    # 수동 E2E 시나리오
 ```
 
 ---
 
-## 번들 크기 (v2.0 기준)
+## 배포
 
-Task 9에서 학급 모듈을 `React.lazy()`로 분리해 혼자 사용하는 교사의 초기 로드를 줄였습니다.
+GitHub Pages 가정. `vite.config.ts` 의 `base: '/art-class-workspace/'` 가 저장소명과 일치해야 합니다. 다른 호스팅(Vercel · Netlify · S3)에 올리려면 base를 `'/'` 로 바꾸고 빌드하면 됩니다.
 
-| 청크 | 크기 | Gzip | 비고 |
-|---|---:|---:|---|
-| `index-*.js` (메인) | ~1,206 kB | ~348 kB | @google/genai SDK 포함 |
-| `SessionHost-*.js` | 58 kB | 20 kB | 교사가 학급 모드 진입 시 로드 |
-| `StudentVoteView-*.js` | 14 kB | 4 kB | `/session/:code` 경로에서만 로드 |
-| `TeacherAuthGate-*.js` | 4 kB | 1 kB | 교사 로그인 화면 |
-| `StudentSubmitPanel-*.js` | 5 kB | 2 kB | 학생 업로드 패널 |
-| `html2canvas.esm-*.js` | 201 kB | 47 kB | jsPDF가 내부적으로 필요 (dynamic) |
-| `index.es-*.js` | 159 kB | 53 kB | jsPDF core (dynamic) |
-| `imagetracer_v1.2.6-*.js` | 20 kB | 6 kB | SVG 변환 |
-
-학급 세션 진입·학생 경로 방문·PDF 내보내기 시점에 필요한 번들만 네트워크에서 가져옵니다.
+`.env.local` 의 `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` 값은 빌드 타임에 번들에 포함됩니다. anon key는 RLS가 보호하므로 공개돼도 안전합니다(반대로 `service_role` 키는 절대 넣지 마세요).
 
 ---
 
-## 접근성 (WCAG 2.1 AA 목표)
+## 라이선스 / 기여
 
-- 키보드 내비게이션: 모든 인터랙티브 요소는 `<button>`·`<input>`·`role="checkbox"/"radio"` 등 네이티브 시맨틱 사용
-- 포커스 링: `:focus-visible` 스타일 유지 (`index.css`의 `:not(:focus-visible)` 예외 처리)
-- 대체 텍스트: 모든 `<img>`에 의미 있는 `alt` 또는 `aria-hidden="true"` 데코레이티브 처리
-- 라이브 리전: Toast는 `role="status"` / 오류는 `role="alert"`
-- 다이얼로그: TV 슬라이드쇼는 `role="dialog"` + 포커스 복귀 (WCAG 다이얼로그 패턴)
+생성된 도안의 1차적 권리는 도안을 만든 교사(BYOK 사용자)에게 있습니다. 학생 작품은 교사 승인 전 비공개 상태이며, 학급 전시장(승인된 작품)도 학급 코드를 가진 사람만 볼 수 있는 비공개 LMS 영역입니다.
 
----
-
-## 호환성 · 성능 목표
-
-- **브라우저**: 최신 Chrome / Edge / Safari (PC)
-  - 학생 경로(`/session/:code`)는 모바일 Safari/Chrome도 지원
-- **Lighthouse 목표**: 성능 ≥ 90, 접근성 ≥ 95 (데스크톱, BYOK 단독 진입 페이지 기준)
-- **메모리**: 히스토리 최대 3개 유지, 20MB 이하 점유
-
----
-
-## 라이선스 & 저작권
-
-생성된 도안은 기본 **CC BY-NC 4.0**로 보증서에 기록됩니다. 학생 색칠본은 **교사 승인 전 비공개** · **24시간 자동 삭제**입니다. 상업적 재배포는 금지되며, 저작권 문의는 각 수업 교사에게 문의하세요.
+기여는 환영하지만 v3는 단일 교사 워크플로우 중심으로 설계됐습니다. 다교사·다학급 등 구조 변경은 v3.1 후속 과제로 두고 있습니다.
 
 ---
 
 ## 참고 문서
 
-- `art-class.md` — v2 PRD 요약
-- `art-class-v2-plan.md` — 상세 개선 계획 (Phase 1~3, 스키마, 스케줄)
-- `SUPABASE_SETUP.md` — 학급 모드 활성화 단계별 가이드
-- `docs/QA_CHECKLIST.md` — 수동 E2E 시나리오
+- [`art-class.md`](./art-class.md) — v3 LMS PRD
+- [`art-class-v3-lms-plan.md`](./art-class-v3-lms-plan.md) — v3 리팩터 실행 계획
+- [`art-class-v2-plan.md`](./art-class-v2-plan.md) — v2 시점 계획 (역사 기록용, v3로 대체됨)
+- [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md) — 학급 모드 활성화 절차
+- [`docs/QA_CHECKLIST.md`](./docs/QA_CHECKLIST.md) — 수동 E2E 체크리스트
